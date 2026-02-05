@@ -4,16 +4,28 @@
 
 ## Current Session
 
-**Date:** 2026-02-05
-**Phase:** AI-Guided Document Creation - Phase 3 Integration
-**Focus:** Connect UI to AI backend and database
+**Date:** 2026-02-06
+**Phase:** AI-Guided Document Creation - Phase 4 Polish & User Stories
+**Focus:** Wire ActionBar, auto-advance, keyboard shortcuts
 
 ### Current Task
-- [x] Phase 3 Task 1: Write integration tests (23 tests, RED phase)
-- [x] Phase 3 Task 2: Implement response parser with retry logic
-- [x] Phase 3 Task 3: Implement useGuidedChat hook + wire ConversationPanel
-- [x] Phase 3 Task 4: Wire Save Draft button to database
-- Total new tests: 23 (339 total passing)
+- [x] Phase 4 Task 1: Write Phase 4 tests (14 tests, RED phase)
+- [x] Phase 4 Task 2: Wire ActionBar into ConversationPanel for draft proposals
+- [x] Phase 4 Task 3: Add keyboard shortcuts (Ctrl+Enter, Meta+Enter)
+- [x] Phase 4 Task 4: Wire auto-advance after Accept (getNextSection helper)
+- Total new tests: 14 (353 total passing)
+- Note: Tasks 4.1, 4.2, 4.5 (US prompts, US sections, US field configs) were already complete from prior phases
+
+### Phase 4 Files Created/Modified
+| File | Purpose | Tests |
+|------|---------|-------|
+| `src/components/guided/conversation-panel.tsx` | ActionBar integration + getNextSection + keyboard shortcuts | 14 |
+| `src/components/guided/action-bar.tsx` | Optional onAccept/onEdit/onRegenerate/onSkip callbacks | — |
+| `__tests__/components/guided/guided-phase4.test.tsx` | Phase 4 integration tests | 14 |
+
+### Phase 3 (Previous - Complete)
+- [x] Phase 3 Tasks 1-4: Response parser, useGuidedChat hook, save draft
+- Total Phase 3 tests: 23 (339 total passing)
 
 ### Phase 3 Files Created/Modified
 | File | Purpose | Tests |

@@ -7,11 +7,13 @@ import type { DocumentSection } from '@/stores/guided-creator-store'
 
 interface Props {
   section: DocumentSection
+  onAccept?: () => void
+  onEdit?: () => void
   onRegenerate?: () => void
   onSkip?: () => void
 }
 
-export function ActionBar({ section, onRegenerate, onSkip }: Props) {
+export function ActionBar({ section, onAccept, onEdit, onRegenerate, onSkip }: Props) {
   const { acceptDraft, editSection } = useGuidedCreatorStore()
 
   return (
@@ -22,7 +24,7 @@ export function ActionBar({ section, onRegenerate, onSkip }: Props) {
       <div className="flex gap-2">
         <Button
           size="sm"
-          onClick={() => acceptDraft(section)}
+          onClick={onAccept ?? (() => acceptDraft(section))}
           className="flex-1"
         >
           <Check className="w-4 h-4 mr-2" />
@@ -31,7 +33,7 @@ export function ActionBar({ section, onRegenerate, onSkip }: Props) {
         <Button
           size="sm"
           variant="outline"
-          onClick={() => editSection(section)}
+          onClick={onEdit ?? (() => editSection(section))}
           className="flex-1"
         >
           <Pencil className="w-4 h-4 mr-2" />

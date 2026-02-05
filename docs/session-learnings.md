@@ -4,6 +4,54 @@
 
 ---
 
+## Session: 2026-02-06 (AI-Guided Creation - Phase 4 Polish)
+
+### [2026-02-06] Explanation: Phase 4 ActionBar Wiring & Auto-Advance
+
+**Scope:** feature
+**Type:** AI-Guided Document Creation - Polish Layer
+**Complexity:** Low (2 files modified, 14 tests)
+
+**What was built:**
+Phase 4 wires the Accept/Edit/Regenerate/Skip actions from the ActionBar into the conversation flow, adds keyboard shortcuts, and implements auto-advance to the next section after accepting a draft.
+
+**Key Changes:**
+
+1. **ConversationPanel** — Now detects when the last AI message has `actionRequired: 'accept'` and renders the ActionBar below the message list. Uses `useMemo` to avoid recalculating on every render.
+
+2. **ActionBar** — Updated to accept optional `onAccept`, `onEdit`, `onRegenerate`, `onSkip` callbacks. Falls back to calling store directly if no callback is provided (backwards compatible).
+
+3. **`getNextSection` helper** — Determines the next section in sequence based on document type (BR: 6 sections, US: 5 sections). Returns `null` for the last section to prevent out-of-bounds navigation.
+
+**Key Pattern: Optional Callback with Fallback**
+
+```typescript
+// ActionBar accepts optional handlers, falls back to store
+onClick={onAccept ?? (() => acceptDraft(section))}
+```
+
+This allows ConversationPanel to inject auto-advance behavior while keeping ActionBar independently usable in other contexts.
+
+**Key Pattern: Conditional ActionBar Rendering**
+
+```typescript
+const actionBarContext = useMemo(() => {
+  const lastMessage = messages[messages.length - 1]
+  if (lastMessage.role === 'ai' && lastMessage.actionRequired && lastMessage.sectionContext) {
+    return { section: lastMessage.sectionContext }
+  }
+  return null
+}, [messages])
+```
+
+ActionBar only appears when the most recent message is an AI draft proposal. It disappears when the user sends a new message or the AI responds with a question.
+
+**ELI5:** Before Phase 4, the assistant could show you a draft but you couldn't do anything with it. Now when the assistant proposes a draft, four buttons appear: Accept (saves it and moves to the next section), Edit (lets you change it), Regenerate (asks the assistant to try again), and Skip (moves on without saving). It's like a waiter showing you your food — you can say "perfect", "change something", "make a new one", or "skip this course."
+
+**Key Concept:** Auto-advance after Accept creates a natural flow through document sections without requiring the user to manually navigate. The `getNextSection` helper encapsulates section ordering per document type.
+
+---
+
 ## Session: 2026-02-05 (AI-Guided Creation - Phase 1 Foundation)
 
 ### [2026-02-05] Explanation: Phase 1 Foundation Modules

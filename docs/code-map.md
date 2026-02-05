@@ -261,6 +261,7 @@ ai-BRUST-creator/
 | `src/hooks/use-guided-chat.ts` | sendMessage, regenerate, saveDraft hook | ✅ Created |
 | `__tests__/unit/lib/response-parser.test.ts` | Response parser unit tests (15) | ✅ Created |
 | `__tests__/unit/hooks/use-guided-chat.test.ts` | Guided chat hook tests (8) | ✅ Created |
+| `__tests__/components/guided/guided-phase4.test.tsx` | ActionBar wiring + keyboard + auto-advance tests (14) | ✅ Created |
 
 ## Modules / Components
 

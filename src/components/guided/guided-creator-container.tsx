@@ -1,11 +1,12 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useGuidedCreatorStore } from '@/stores/guided-creator-store'
+import { useGuidedChat } from '@/hooks/use-guided-chat'
 import { ConversationPanel } from './conversation-panel'
 import { DocumentPanel } from './document-panel'
 import { Button } from '@/components/ui/button'
-import { Save, X } from 'lucide-react'
+import { Save, X, Loader2 } from 'lucide-react'
 
 interface Props {
   documentType: 'business_rule' | 'user_story'
@@ -20,6 +21,8 @@ const TYPE_LABELS = {
 
 export function GuidedCreatorContainer({ documentType, onClose, onSave }: Props) {
   const { initSession, overallCompletion, canSaveDraft } = useGuidedCreatorStore()
+  const { saveDraft } = useGuidedChat()
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     initSession(documentType)
@@ -40,11 +43,25 @@ export function GuidedCreatorContainer({ documentType, onClose, onSave }: Props)
           <Button
             variant="outline"
             size="sm"
-            onClick={onSave}
-            disabled={!canSaveDraft}
+            onClick={async () => {
+              setIsSaving(true)
+              try {
+                await saveDraft()
+                onSave?.()
+              } catch {
+                // Error handling delegated to parent or toast
+              } finally {
+                setIsSaving(false)
+              }
+            }}
+            disabled={!canSaveDraft || isSaving}
           >
-            <Save className="w-4 h-4 mr-2" />
-            Save Draft
+            {isSaving ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
+            {isSaving ? 'Saving...' : 'Save Draft'}
           </Button>
           <Button
             variant="ghost"

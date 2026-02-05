@@ -2,13 +2,15 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useGuidedCreatorStore } from '@/stores/guided-creator-store'
+import { useGuidedChat } from '@/hooks/use-guided-chat'
 import { MessageBubble } from './message-bubble'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Send, Loader2 } from 'lucide-react'
 
 export function ConversationPanel() {
-  const { messages, isAiThinking, addMessage } = useGuidedCreatorStore()
+  const { messages, isAiThinking } = useGuidedCreatorStore()
+  const { sendMessage } = useGuidedChat()
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -20,7 +22,7 @@ export function ConversationPanel() {
     const trimmed = input.trim()
     if (!trimmed) return
 
-    addMessage({ role: 'user', content: trimmed })
+    sendMessage(trimmed)
     setInput('')
   }
 

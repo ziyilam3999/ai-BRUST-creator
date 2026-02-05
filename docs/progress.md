@@ -5,14 +5,29 @@
 ## Current Session
 
 **Date:** 2026-02-05
-**Phase:** AI-Guided Document Creation - Phase 2 UI Components
-**Focus:** Implement guided creation UI components and page routes
+**Phase:** AI-Guided Document Creation - Phase 3 Integration
+**Focus:** Connect UI to AI backend and database
 
 ### Current Task
-- [x] Phase 2 Task 1: Write component tests (35 tests, RED phase)
-- [x] Phase 2 Task 2: Implement 9 guided UI components (GREEN phase)
-- [x] Phase 2 Task 3: Create guided page routes (BR + US)
-- Total new tests: 35 (316 total passing)
+- [x] Phase 3 Task 1: Write integration tests (23 tests, RED phase)
+- [x] Phase 3 Task 2: Implement response parser with retry logic
+- [x] Phase 3 Task 3: Implement useGuidedChat hook + wire ConversationPanel
+- [x] Phase 3 Task 4: Wire Save Draft button to database
+- Total new tests: 23 (339 total passing)
+
+### Phase 3 Files Created/Modified
+| File | Purpose | Tests |
+|------|---------|-------|
+| `src/lib/ai/response-parser.ts` | JSON parsing + validation + retry with backoff | 15 |
+| `src/hooks/use-guided-chat.ts` | sendMessage, regenerate, saveDraft hook | 8 |
+| `src/components/guided/conversation-panel.tsx` | Wired to useGuidedChat hook | — |
+| `src/components/guided/guided-creator-container.tsx` | Save Draft button wired with loading state | — |
+| `__tests__/unit/lib/response-parser.test.ts` | Response parser unit tests | 15 |
+| `__tests__/unit/hooks/use-guided-chat.test.ts` | Hook integration tests | 8 |
+
+### Phase 2 (Previous - Complete)
+- [x] Phase 2 Tasks 1-3: Components, Routes
+- Total Phase 2 tests: 35 (316 total passing)
 
 ### Phase 2 Files Created
 | File | Purpose | Tests |

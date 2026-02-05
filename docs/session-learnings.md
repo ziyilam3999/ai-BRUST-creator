@@ -170,6 +170,65 @@ When testing containers that render child components with overlapping text, use 
 
 ---
 
+## Session: 2026-02-05 (AI-Guided Creation - Phase 3 Integration)
+
+### [2026-02-05] Explanation: Phase 3 Integration Layer
+
+**Scope:** feature
+**Type:** AI-Guided Document Creation - Integration Layer
+**Complexity:** Medium (2 modules, 23 tests)
+
+**What was built:**
+Phase 3 connects the UI (Phase 2) to the AI backend (Phase 1) by creating the "wiring" layer: a response parser that handles AI output, a React hook that manages the conversation lifecycle, and save-to-database functionality.
+
+**2 Modules Created:**
+
+1. **Response Parser** (`src/lib/ai/response-parser.ts`)
+   - `parseAIResponse(raw)`: Extracts JSON from AI text using regex `/\{[\s\S]*\}/`, falls back to plain text
+   - `validateParsedResponse()`: Type-specific validation (draft_proposal needs section+content+display)
+   - `parseAIResponseWithRetry()`: Retry loop with exponential backoff (1s, 2s, 4s) and progressively stricter prompts
+   - Response types: `draft_proposal`, `question`, `advice`, `error`
+
+2. **useGuidedChat Hook** (`src/hooks/use-guided-chat.ts`)
+   - `sendMessage(input)`: User message → store → API call → parse response → add AI message
+   - `regenerate()`: Re-calls API with action='regenerate' for alternative drafts
+   - `saveDraft()`: Serializes sections → POST to `/api/documents` as draft
+   - Handles 429 rate limit with specific user-facing message
+   - Conversation history limited to last 20 non-system messages
+
+**Key Pattern: Hook as Integration Layer**
+
+```typescript
+// The hook bridges UI, store, API, and parser:
+// UI (ConversationPanel) → Hook (useGuidedChat) → API (/api/ai/guided) → Parser → Store
+const { sendMessage } = useGuidedChat()
+// ConversationPanel calls sendMessage(input)
+// Hook handles: addMessage → setAiThinking → fetch → parse → addMessage → setAiThinking(false)
+```
+
+This pattern keeps components thin (just render + call hook functions) while the hook orchestrates the full lifecycle.
+
+**Key Pattern: Draft Proposal Metadata**
+
+```typescript
+// When AI proposes a draft, extra metadata is attached to the message:
+addMessage({
+  role: 'ai',
+  content: parsed.display,
+  sectionContext: parsed.section,     // Which section this draft is for
+  actionRequired: 'accept',           // Triggers ActionBar to show
+  draftContent: parsed.content,       // The actual structured content
+})
+```
+
+This allows the ActionBar component to know what to accept/edit without separate state.
+
+**ELI5:** Phase 1 built the assistant's brain. Phase 2 built the screen. Phase 3 connected the wires between them. Now when you type a message, it travels through a wire to the AI brain, the brain sends back an answer, the wire translates that answer into something the screen understands, and the screen updates. If the wire gets a garbled answer, it asks the brain to try again (up to 3 times) before giving up.
+
+**Key Concept:** Exponential backoff with stricter prompts is a resilient pattern for AI response parsing. Instead of immediately showing an error, the system silently retries with increasingly explicit formatting instructions, only surfacing failure to the user after all attempts are exhausted.
+
+---
+
 ## Session: 2026-02-04 (Context7 MCP Installation)
 
 ### [2026-02-04 HH:MM] Explanation: Context7 MCP Setup

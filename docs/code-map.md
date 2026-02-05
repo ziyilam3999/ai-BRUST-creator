@@ -257,6 +257,10 @@ ai-BRUST-creator/
 | `src/app/(dashboard)/business-rule/guided/new/page.tsx` | Guided BR creation route | ✅ Created |
 | `src/app/(dashboard)/user-story/guided/new/page.tsx` | Guided US creation route | ✅ Created |
 | `__tests__/components/guided/guided-components.test.tsx` | Guided UI component tests (35) | ✅ Created |
+| `src/lib/ai/response-parser.ts` | AI response JSON parsing + validation + retry | ✅ Created |
+| `src/hooks/use-guided-chat.ts` | sendMessage, regenerate, saveDraft hook | ✅ Created |
+| `__tests__/unit/lib/response-parser.test.ts` | Response parser unit tests (15) | ✅ Created |
+| `__tests__/unit/hooks/use-guided-chat.test.ts` | Guided chat hook tests (8) | ✅ Created |
 
 ## Modules / Components
 
@@ -271,6 +275,8 @@ ai-BRUST-creator/
 | US Wizard | `src/components/wizard/user-story/` | User Story wizard | ✅ Phase 2.4 |
 | Documents API | `src/app/api/documents/` | Document CRUD endpoints | ✅ Phase 1.5 |
 | Hooks | `src/hooks/` | Custom React hooks | ✅ Phase 1.5 |
+| Response Parser | `src/lib/ai/response-parser.ts` | AI response JSON parsing + retry | ✅ Guided P3 |
+| Guided Chat Hook | `src/hooks/use-guided-chat.ts` | sendMessage/regenerate/saveDraft | ✅ Guided P3 |
 | History | `src/app/(dashboard)/history/` | Document history list | ✅ Phase 1.5 |
 | AI | `src/lib/ai/` | Anthropic Claude integration | ✅ Phase 2 |
 | AI API | `src/app/api/ai/` | Chat and generate endpoints | ✅ Phase 2 |

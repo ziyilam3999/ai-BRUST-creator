@@ -63,6 +63,7 @@ ai-BRUST-creator/
 │   │   └── api/                  # API route tests
 │   └── components/               # Component tests
 │       ├── wizard/               # Wizard component tests
+│       ├── guided/               # Guided creation component tests
 │       └── chat/                 # Chat component tests
 ├── e2e/                          # End-to-end tests
 │   └── flows/                    # User flow tests
@@ -76,9 +77,11 @@ ai-BRUST-creator/
 │   │   │   ├── page.tsx          # Document list
 │   │   │   ├── business-rule/
 │   │   │   │   ├── new/page.tsx  # BR wizard
+│   │   │   │   ├── guided/new/page.tsx # Guided BR creation
 │   │   │   │   └── [id]/page.tsx
 │   │   │   ├── user-story/
 │   │   │   │   ├── new/page.tsx  # US wizard
+│   │   │   │   ├── guided/new/page.tsx # Guided US creation
 │   │   │   │   └── [id]/page.tsx
 │   │   │   ├── history/page.tsx
 │   │   │   └── settings/page.tsx
@@ -109,6 +112,16 @@ ai-BRUST-creator/
 │   │   │   ├── user-story-wizard-container.tsx
 │   │   │   ├── business-rule/    # BR wizard steps
 │   │   │   └── user-story/       # US wizard steps
+│   │   ├── guided/               # AI-guided creation UI
+│   │   │   ├── index.ts          # Barrel exports
+│   │   │   ├── guided-creator-container.tsx
+│   │   │   ├── conversation-panel.tsx
+│   │   │   ├── document-panel.tsx
+│   │   │   ├── section-card.tsx
+│   │   │   ├── section-navigation.tsx
+│   │   │   ├── completion-summary.tsx
+│   │   │   ├── message-bubble.tsx
+│   │   │   └── action-bar.tsx
 │   │   ├── chat/
 │   │   │   └── chat-panel.tsx
 │   │   ├── providers/
@@ -232,6 +245,18 @@ ai-BRUST-creator/
 | `__tests__/unit/lib/advice-engine.test.ts` | Advice engine tests (21) | ✅ Created |
 | `__tests__/unit/lib/input-sanitizer.test.ts` | Input sanitizer tests (23) | ✅ Created |
 | `__tests__/integration/api/guided.test.ts` | Guided AI API tests (10) | ✅ Created |
+| `src/components/guided/guided-creator-container.tsx` | Split-panel guided creation layout | ✅ Created |
+| `src/components/guided/conversation-panel.tsx` | Chat messages + input + AI thinking | ✅ Created |
+| `src/components/guided/document-panel.tsx` | Section cards + completion summary | ✅ Created |
+| `src/components/guided/section-card.tsx` | Editable section cards (FieldEditor + SectionDisplay) | ✅ Created |
+| `src/components/guided/section-navigation.tsx` | Section tabs with status icons | ✅ Created |
+| `src/components/guided/completion-summary.tsx` | Progress bar + advice engine display | ✅ Created |
+| `src/components/guided/message-bubble.tsx` | AI/user/system message display | ✅ Created |
+| `src/components/guided/action-bar.tsx` | Accept/Edit/Regenerate/Skip buttons | ✅ Created |
+| `src/components/guided/index.ts` | Barrel exports for guided components | ✅ Created |
+| `src/app/(dashboard)/business-rule/guided/new/page.tsx` | Guided BR creation route | ✅ Created |
+| `src/app/(dashboard)/user-story/guided/new/page.tsx` | Guided US creation route | ✅ Created |
+| `__tests__/components/guided/guided-components.test.tsx` | Guided UI component tests (35) | ✅ Created |
 
 ## Modules / Components
 
@@ -259,6 +284,8 @@ ai-BRUST-creator/
 | AI Guided | `src/lib/ai/guided-prompts.ts` | SBVR/INVEST prompts for guided creation | ✅ Guided P1 |
 | Input Sanitizer | `src/lib/ai/input-sanitizer.ts` | Prompt injection + XSS prevention | ✅ Guided P1 |
 | Guided API | `src/app/api/ai/guided/route.ts` | Streaming AI endpoint + rate limiting | ✅ Guided P1 |
+| Guided UI | `src/components/guided/` | Split-panel guided creation components | ✅ Guided P2 |
+| Guided Routes | `src/app/(dashboard)/*/guided/new/` | Guided creation page routes | ✅ Guided P2 |
 
 ## Entry Points
 
@@ -269,6 +296,8 @@ ai-BRUST-creator/
 | Dashboard | `src/app/(dashboard)/page.tsx` | Document list (protected) |
 | BR Wizard | `src/app/(dashboard)/business-rule/new/page.tsx` | Create Business Rule |
 | US Wizard | `src/app/(dashboard)/user-story/new/page.tsx` | Create User Story |
+| Guided BR | `src/app/(dashboard)/business-rule/guided/new/page.tsx` | AI-Guided BR Creation |
+| Guided US | `src/app/(dashboard)/user-story/guided/new/page.tsx` | AI-Guided US Creation |
 
 ## API Routes
 
@@ -323,6 +352,7 @@ ai-BRUST-creator/
 | Table | `src/components/ui/table.tsx` |
 | Tabs | `src/components/ui/tabs.tsx` |
 | Textarea | `src/components/ui/textarea.tsx` |
+| Progress | `src/components/ui/progress.tsx` |
 
 ---
 

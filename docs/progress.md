@@ -5,10 +5,34 @@
 ## Current Session
 
 **Date:** 2026-02-06
-**Phase:** AI-Guided Document Creation - Phase 4 Polish & User Stories
-**Focus:** Wire ActionBar, auto-advance, keyboard shortcuts
+**Phase:** AI-Guided Document Creation - Phase 5 BR-to-US Conversion
+**Focus:** BR analyzer, mapper, conversion API, store, UI
 
 ### Current Task
+- [x] Phase 5 Task 1: Write Phase 5 tests (71 tests, RED phase)
+- [x] Phase 5 Task 2: Implement br-to-us-analyzer (parseConditions, hasComplexLogic, extractPersonas, analyzeForUserStories)
+- [x] Phase 5 Task 3: Implement br-to-us-mapper (mapBRtoUS, extractPersonaFromRule, extractActionFromRule, mapPriority)
+- [x] Phase 5 Task 4: Create convert-br-to-us API endpoint (/api/ai/convert)
+- [x] Phase 5 Task 5: Update guided-creator-store with ConversionState
+- [x] Phase 5 Task 6: Create conversion UI (ConversionPanel, useConversion hook)
+- Total new tests: 71 (424 total passing)
+
+### Phase 5 Files Created/Modified
+| File | Purpose | Tests |
+|------|---------|-------|
+| `src/lib/guided/br-to-us-analyzer.ts` | Parse conditions, detect complexity, extract personas, analyze split | 21 |
+| `src/lib/guided/br-to-us-mapper.ts` | Map BR fields to US, priority conversion, AC generation | 18 |
+| `src/app/api/ai/convert/route.ts` | Analyze and convert BR to US API endpoint | 8 |
+| `src/stores/guided-creator-store.ts` | ConversionState + 6 conversion actions | 14 |
+| `src/components/guided/conversion-panel.tsx` | Conversion progress and story selection UI | 10 |
+| `src/hooks/use-conversion.ts` | analyze() and convert() hook for API calls | — |
+| `__tests__/unit/lib/br-to-us-analyzer.test.ts` | Analyzer unit tests | 21 |
+| `__tests__/unit/lib/br-to-us-mapper.test.ts` | Mapper unit tests | 18 |
+| `__tests__/integration/api/convert.test.ts` | API integration tests | 8 |
+| `__tests__/unit/stores/guided-creator-conversion.test.ts` | Store conversion tests | 14 |
+| `__tests__/components/guided/conversion-panel.test.tsx` | UI component tests | 10 |
+
+### Phase 4 (Previous - Complete)
 - [x] Phase 4 Task 1: Write Phase 4 tests (14 tests, RED phase)
 - [x] Phase 4 Task 2: Wire ActionBar into ConversationPanel for draft proposals
 - [x] Phase 4 Task 3: Add keyboard shortcuts (Ctrl+Enter, Meta+Enter)
@@ -547,4 +571,4 @@
 
 ---
 
-**Last Updated:** 2026-02-05
+**Last Updated:** 2026-02-06

@@ -262,6 +262,16 @@ ai-BRUST-creator/
 | `__tests__/unit/lib/response-parser.test.ts` | Response parser unit tests (15) | ✅ Created |
 | `__tests__/unit/hooks/use-guided-chat.test.ts` | Guided chat hook tests (8) | ✅ Created |
 | `__tests__/components/guided/guided-phase4.test.tsx` | ActionBar wiring + keyboard + auto-advance tests (14) | ✅ Created |
+| `src/lib/guided/br-to-us-analyzer.ts` | Parse conditions, detect complexity, extract personas, analyze split | ✅ Created |
+| `src/lib/guided/br-to-us-mapper.ts` | Map BR fields to US, priority conversion, AC generation | ✅ Created |
+| `src/app/api/ai/convert/route.ts` | Analyze and convert BR to US API endpoint | ✅ Created |
+| `src/components/guided/conversion-panel.tsx` | Conversion progress and story selection UI | ✅ Created |
+| `src/hooks/use-conversion.ts` | analyze() and convert() hook for API calls | ✅ Created |
+| `__tests__/unit/lib/br-to-us-analyzer.test.ts` | Analyzer unit tests (21) | ✅ Created |
+| `__tests__/unit/lib/br-to-us-mapper.test.ts` | Mapper unit tests (18) | ✅ Created |
+| `__tests__/integration/api/convert.test.ts` | Convert API integration tests (8) | ✅ Created |
+| `__tests__/unit/stores/guided-creator-conversion.test.ts` | Store conversion tests (14) | ✅ Created |
+| `__tests__/components/guided/conversion-panel.test.tsx` | Conversion panel UI tests (10) | ✅ Created |
 
 ## Modules / Components
 
@@ -293,6 +303,11 @@ ai-BRUST-creator/
 | Guided API | `src/app/api/ai/guided/route.ts` | Streaming AI endpoint + rate limiting | ✅ Guided P1 |
 | Guided UI | `src/components/guided/` | Split-panel guided creation components | ✅ Guided P2 |
 | Guided Routes | `src/app/(dashboard)/*/guided/new/` | Guided creation page routes | ✅ Guided P2 |
+| BR-to-US Analyzer | `src/lib/guided/br-to-us-analyzer.ts` | Parse conditions, extract personas, analyze split | ✅ Guided P5 |
+| BR-to-US Mapper | `src/lib/guided/br-to-us-mapper.ts` | Map BR to US fields, priority, AC generation | ✅ Guided P5 |
+| Convert API | `src/app/api/ai/convert/route.ts` | BR-to-US analyze and convert endpoint | ✅ Guided P5 |
+| Conversion UI | `src/components/guided/conversion-panel.tsx` | Conversion progress and story selection | ✅ Guided P5 |
+| Conversion Hook | `src/hooks/use-conversion.ts` | analyze() and convert() API hook | ✅ Guided P5 |
 
 ## Entry Points
 

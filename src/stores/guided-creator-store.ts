@@ -42,6 +42,30 @@ export interface ConversationMessage {
   draftContent?: Record<string, unknown>
 }
 
+// Conversion types for BR-to-US
+export type ConversionMode = 'none' | 'analyzing' | 'converting' | 'complete'
+
+export interface ProposedStory {
+  title: string
+  rationale: string
+  estimatedSize: 'XS' | 'S' | 'M' | 'L' | 'XL'
+}
+
+export interface ConversionAnalysis {
+  shouldSplit: boolean
+  suggestedCount: number
+  reasoning: string[]
+  proposedStories: ProposedStory[]
+}
+
+export interface ConversionState {
+  mode: ConversionMode
+  analysis: ConversionAnalysis | null
+  convertedStories: unknown[] // UserStoryData[]
+  selectedStoryIndex: number
+  error: string | null
+}
+
 // Section weights for completion calculation
 const SECTION_WEIGHTS = {
   business_rule: {
@@ -108,6 +132,9 @@ export interface GuidedCreatorState {
   lastSessionSummary: string | null
   sessionStartedAt: string
 
+  // Conversion state (BR-to-US)
+  conversion: ConversionState
+
   // Actions
   initSession: (docType: 'business_rule' | 'user_story') => void
   resumeSession: (documentId: string) => void
@@ -122,9 +149,25 @@ export interface GuidedCreatorState {
   setDocumentStatus: (status: 'draft' | 'complete') => void
   setAiThinking: (thinking: boolean) => void
   reset: () => void
+
+  // Conversion actions
+  startConversion: (analysis: ConversionAnalysis) => void
+  setConvertedStories: (stories: unknown[]) => void
+  selectConvertedStory: (index: number) => void
+  resetConversion: () => void
+  setConversionError: (error: string | null) => void
+  setConversionMode: (mode: ConversionMode) => void
 }
 
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+
+const INITIAL_CONVERSION_STATE: ConversionState = {
+  mode: 'none',
+  analysis: null,
+  convertedStories: [],
+  selectedStoryIndex: 0,
+  error: null,
+}
 
 export const useGuidedCreatorStore = create<GuidedCreatorState>()(
   persist(
@@ -146,6 +189,7 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
       isReadyForReview: false,
       lastSessionSummary: null,
       sessionStartedAt: new Date().toISOString(),
+      conversion: INITIAL_CONVERSION_STATE,
 
       // Actions
       initSession: (docType) => {
@@ -163,6 +207,7 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
           canSaveDraft: true,
           isReadyForReview: false,
           sessionStartedAt: new Date().toISOString(),
+          conversion: INITIAL_CONVERSION_STATE,
         })
       },
 
@@ -300,7 +345,63 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
           isReadyForReview: false,
           lastSessionSummary: null,
           sessionStartedAt: new Date().toISOString(),
+          conversion: INITIAL_CONVERSION_STATE,
         })
+      },
+
+      // Conversion actions
+      startConversion: (analysis) => {
+        set((state) => ({
+          conversion: {
+            ...state.conversion,
+            mode: 'analyzing',
+            analysis,
+            error: null,
+          },
+        }))
+      },
+
+      setConvertedStories: (stories) => {
+        set((state) => ({
+          conversion: {
+            ...state.conversion,
+            mode: 'complete',
+            convertedStories: stories,
+            selectedStoryIndex: 0,
+          },
+        }))
+      },
+
+      selectConvertedStory: (index) => {
+        set((state) => ({
+          conversion: {
+            ...state.conversion,
+            selectedStoryIndex: index,
+          },
+        }))
+      },
+
+      resetConversion: () => {
+        set({ conversion: INITIAL_CONVERSION_STATE })
+      },
+
+      setConversionError: (error) => {
+        set((state) => ({
+          conversion: {
+            ...state.conversion,
+            mode: 'none',
+            error,
+          },
+        }))
+      },
+
+      setConversionMode: (mode) => {
+        set((state) => ({
+          conversion: {
+            ...state.conversion,
+            mode,
+          },
+        }))
       },
     }),
     {
@@ -313,6 +414,7 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
         currentSection: state.currentSection,
         messages: state.messages,
         overallCompletion: state.overallCompletion,
+        conversion: state.conversion,
       }),
     }
   )

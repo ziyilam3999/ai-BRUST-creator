@@ -50,6 +50,7 @@ export default function UserStoryDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
 
   const id = params.id as string
 
@@ -88,6 +89,26 @@ export default function UserStoryDetailPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete')
       setIsDeleting(false)
+    }
+  }
+
+  const handleStatusChange = async (newStatus: string) => {
+    setIsUpdatingStatus(true)
+    try {
+      const response = await fetch(`/api/documents/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (!response.ok) {
+        throw new Error('Failed to update status')
+      }
+      const data = await response.json()
+      setDocument(data.data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update status')
+    } finally {
+      setIsUpdatingStatus(false)
     }
   }
 
@@ -132,6 +153,26 @@ export default function UserStoryDetailPage() {
             </Button>
           </Link>
           <div className="flex gap-2">
+            {document.status === 'draft' && (
+              <Button
+                size="sm"
+                onClick={() => handleStatusChange('review')}
+                disabled={isUpdatingStatus}
+              >
+                {isUpdatingStatus ? 'Updating...' : 'Submit for Review'}
+              </Button>
+            )}
+            {document.status === 'review' && (
+              <Button
+                size="sm"
+                variant="default"
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => handleStatusChange('approved')}
+                disabled={isUpdatingStatus}
+              >
+                {isUpdatingStatus ? 'Updating...' : 'Approve'}
+              </Button>
+            )}
             <PublishDialog
               documentId={id}
               documentTitle={document.title}

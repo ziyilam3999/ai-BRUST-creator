@@ -32,7 +32,13 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Badge } from '@/components/ui/badge'
-import { FileText, Trash2, Edit, Plus, Loader2 } from 'lucide-react'
+import { FileText, Trash2, Edit, Plus, Loader2, ChevronDown } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 type DocumentType = 'business_rule' | 'user_story' | undefined
 type DocumentStatus = 'draft' | 'review' | 'approved' | 'deprecated' | undefined
@@ -84,12 +90,23 @@ export default function HistoryPage() {
             View and manage all your Business Rules and User Stories
           </p>
         </div>
-        <Link href="/business-rule/new">
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            New Document
-          </Button>
-        </Link>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              New Document
+              <ChevronDown className="w-4 h-4 ml-2" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+              <Link href="/business-rule/new">Business Rule</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/user-story/new">User Story</Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <Card>
@@ -182,7 +199,7 @@ export default function HistoryPage() {
                     <TableCell>{formatDate(doc.updatedAt)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Link href={`/business-rule/${doc.id}`}>
+                        <Link href={`/${doc.documentType === 'user_story' ? 'user-story' : 'business-rule'}/${doc.id}`}>
                           <Button variant="ghost" size="sm">
                             <Edit className="w-4 h-4" />
                           </Button>

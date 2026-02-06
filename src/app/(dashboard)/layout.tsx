@@ -16,6 +16,9 @@ export default function DashboardLayout({
               <Link href="/business-rule/new" className="text-sm hover:underline">
                 New Business Rule
               </Link>
+              <Link href="/user-story/new" className="text-sm hover:underline">
+                New User Story
+              </Link>
             </nav>
           </div>
         </header>

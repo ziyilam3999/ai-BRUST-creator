@@ -14,7 +14,8 @@ import { USDefinitionOfDoneStep } from './user-story/definition-of-done-step'
 import { USRelatedItemsStep } from './user-story/related-items-step'
 import { USReviewStep } from './user-story/review-step'
 import { ChatPanel } from '@/components/chat/chat-panel'
-import { Loader2 } from 'lucide-react'
+import { Loader2, X } from 'lucide-react'
+import Link from 'next/link'
 
 export function UserStoryWizardContainer() {
   const router = useRouter()
@@ -113,9 +114,16 @@ export function UserStoryWizardContainer() {
         <CardHeader>
           <div className="flex items-center justify-between mb-4">
             <CardTitle>Create User Story</CardTitle>
-            <span className="text-sm text-muted-foreground">
-              Step {currentStep} of {US_WIZARD_STEPS.length}
-            </span>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-muted-foreground">
+                Step {currentStep} of {US_WIZARD_STEPS.length}
+              </span>
+              <Link href="/history">
+                <Button variant="ghost" size="icon" title="Cancel and return to history">
+                  <X className="w-5 h-5" />
+                </Button>
+              </Link>
+            </div>
           </div>
           <WizardProgress currentStep={currentStep} totalSteps={US_WIZARD_STEPS.length} />
           <div className="mt-4">

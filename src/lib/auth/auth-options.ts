@@ -1,5 +1,8 @@
 import { NextAuthOptions, getServerSession } from 'next-auth'
 import GitHubProvider from 'next-auth/providers/github'
+import { db } from '@/lib/db'
+import { users } from '@/lib/db/schema'
+import { eq } from 'drizzle-orm'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -13,6 +16,36 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === 'github' && profile) {
+        try {
+          // Check if user exists
+          const existingUser = await db
+            .select()
+            .from(users)
+            .where(eq(users.githubId, String(profile.id)))
+            .limit(1)
+
+          if (existingUser.length === 0) {
+            // Create new user
+            await db.insert(users).values({
+              id: user.id,
+              email: user.email,
+              name: user.name,
+              image: user.image,
+              githubId: String(profile.id),
+            })
+          } else {
+            // Update user ID to match existing record
+            user.id = existingUser[0].id
+          }
+        } catch (error) {
+          console.error('Error in signIn callback:', error)
+          return false
+        }
+      }
+      return true
+    },
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id

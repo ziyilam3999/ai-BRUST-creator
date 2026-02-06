@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 
 export default function LoginPage() {
   const handleGitHubLogin = () => {
-    signIn('github', { callbackUrl: '/dashboard' })
+    signIn('github', { callbackUrl: '/history' })
   }
 
   return (

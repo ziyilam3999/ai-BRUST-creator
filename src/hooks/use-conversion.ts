@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react'
 import { useGuidedCreatorStore } from '@/stores/guided-creator-store'
+import type { GeneratedStory } from '@/stores/guided-creator-store'
 import type { BusinessRuleData } from '@/types/business-rule'
 import type { UserStoryData } from '@/types/user-story'
 
@@ -83,7 +84,15 @@ export function useConversion(): UseConversionReturn {
       const data = await response.json()
 
       if (data.type === 'conversion') {
-        setConvertedStories(data.stories as UserStoryData[])
+        const stories: GeneratedStory[] = (data.stories as UserStoryData[]).map(
+          (storyData, index) => ({
+            id: `converted-${Date.now()}-${index}`,
+            data: storyData,
+            status: 'draft' as const,
+            conversationHistory: [],
+          })
+        )
+        setConvertedStories(stories)
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error'

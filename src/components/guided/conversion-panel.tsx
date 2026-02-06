@@ -131,11 +131,9 @@ export function ConversionPanel({ onProceedToConvert, onSelectStory, className }
             </div>
 
             <div className="space-y-1">
-              {convertedStories.map((story: unknown, i: number) => {
-                const s = story as { storyId?: string; title?: string }
-                return (
+              {convertedStories.map((story, i) => (
                   <button
-                    key={i}
+                    key={story.id}
                     onClick={() => handleStorySelect(i)}
                     className={cn(
                       'w-full flex items-center justify-between p-2 rounded text-left text-sm',
@@ -143,13 +141,12 @@ export function ConversionPanel({ onProceedToConvert, onSelectStory, className }
                       selectedStoryIndex === i ? 'bg-primary/10 border border-primary' : 'bg-muted/50'
                     )}
                   >
-                    <span>{s.storyId || `Story ${i + 1}`}</span>
+                    <span>{story.data.storyId || `Story ${i + 1}`}</span>
                     <span className="text-xs text-muted-foreground truncate max-w-[150px]">
-                      {s.title || 'Untitled'}
+                      {story.data.title || 'Untitled'}
                     </span>
                   </button>
-                )
-              })}
+              ))}
             </div>
           </div>
         )}

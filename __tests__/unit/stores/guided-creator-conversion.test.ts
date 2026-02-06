@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useGuidedCreatorStore } from '@/stores/guided-creator-store'
-import type { ConversionAnalysis } from '@/stores/guided-creator-store'
+import type { ConversionAnalysis, GeneratedStory } from '@/stores/guided-creator-store'
+import type { UserStoryData } from '@/types/user-story'
+import { INITIAL_USER_STORY } from '@/types/user-story'
 
 describe('Guided Creator Store - Conversion', () => {
   beforeEach(() => {
@@ -56,11 +58,19 @@ describe('Guided Creator Store - Conversion', () => {
     })
   })
 
+  // Helper to create minimal GeneratedStory for older tests
+  const makeMinimalStory = (id: string, overrides: Partial<UserStoryData> = {}): GeneratedStory => ({
+    id,
+    data: { ...INITIAL_USER_STORY, ...overrides },
+    status: 'draft',
+    conversationHistory: [],
+  })
+
   describe('setConvertedStories', () => {
     it('should store converted stories', () => {
       const stories = [
-        { storyId: 'US-001', title: 'Test Story 1' },
-        { storyId: 'US-002', title: 'Test Story 2' },
+        makeMinimalStory('s1', { storyId: 'US-001', title: 'Test Story 1' }),
+        makeMinimalStory('s2', { storyId: 'US-002', title: 'Test Story 2' }),
       ]
 
       useGuidedCreatorStore.getState().setConvertedStories(stories)
@@ -72,7 +82,7 @@ describe('Guided Creator Store - Conversion', () => {
 
     it('should reset selected index to 0', () => {
       useGuidedCreatorStore.getState().selectConvertedStory(2)
-      useGuidedCreatorStore.getState().setConvertedStories([{ id: 1 }])
+      useGuidedCreatorStore.getState().setConvertedStories([makeMinimalStory('s1')])
 
       const state = useGuidedCreatorStore.getState()
       expect(state.conversion.selectedStoryIndex).toBe(0)
@@ -82,9 +92,9 @@ describe('Guided Creator Store - Conversion', () => {
   describe('selectConvertedStory', () => {
     it('should update selected story index', () => {
       useGuidedCreatorStore.getState().setConvertedStories([
-        { id: 1 },
-        { id: 2 },
-        { id: 3 },
+        makeMinimalStory('s1'),
+        makeMinimalStory('s2'),
+        makeMinimalStory('s3'),
       ])
       useGuidedCreatorStore.getState().selectConvertedStory(2)
 
@@ -102,7 +112,7 @@ describe('Guided Creator Store - Conversion', () => {
         reasoning: ['Test'],
         proposedStories: [],
       })
-      useGuidedCreatorStore.getState().setConvertedStories([{ id: 1 }])
+      useGuidedCreatorStore.getState().setConvertedStories([makeMinimalStory('s1')])
 
       // Reset
       useGuidedCreatorStore.getState().resetConversion()
@@ -144,9 +154,86 @@ describe('Guided Creator Store - Conversion', () => {
     })
   })
 
+  describe('GeneratedStory per-story actions', () => {
+    const makeStory = (overrides: Partial<UserStoryData> = {}): UserStoryData => ({
+      ...INITIAL_USER_STORY,
+      storyId: 'US-TEST-001',
+      title: 'Test Story',
+      ...overrides,
+    })
+
+    const makeGenerated = (id: string, data?: Partial<UserStoryData>): GeneratedStory => ({
+      id,
+      data: makeStory(data),
+      status: 'draft',
+      conversationHistory: [],
+    })
+
+    it('should accept a generated story by id', () => {
+      const stories = [makeGenerated('s1'), makeGenerated('s2')]
+      useGuidedCreatorStore.getState().setConvertedStories(stories)
+      useGuidedCreatorStore.getState().acceptStory('s1')
+
+      const state = useGuidedCreatorStore.getState()
+      const s1 = state.conversion.convertedStories.find((s: GeneratedStory) => s.id === 's1')
+      expect(s1?.status).toBe('accepted')
+    })
+
+    it('should set a story to editing mode', () => {
+      const stories = [makeGenerated('s1')]
+      useGuidedCreatorStore.getState().setConvertedStories(stories)
+      useGuidedCreatorStore.getState().editStory('s1')
+
+      const state = useGuidedCreatorStore.getState()
+      const s1 = state.conversion.convertedStories.find((s: GeneratedStory) => s.id === 's1')
+      expect(s1?.status).toBe('editing')
+      expect(state.conversion.currentEditingStory).toBe('s1')
+    })
+
+    it('should update a story data by id', () => {
+      const stories = [makeGenerated('s1', { title: 'Original' })]
+      useGuidedCreatorStore.getState().setConvertedStories(stories)
+      useGuidedCreatorStore.getState().updateStory('s1', { title: 'Updated' })
+
+      const state = useGuidedCreatorStore.getState()
+      const s1 = state.conversion.convertedStories.find((s: GeneratedStory) => s.id === 's1')
+      expect(s1?.data.title).toBe('Updated')
+    })
+
+    it('should delete a story by id', () => {
+      const stories = [makeGenerated('s1'), makeGenerated('s2')]
+      useGuidedCreatorStore.getState().setConvertedStories(stories)
+      useGuidedCreatorStore.getState().deleteStory('s1')
+
+      const state = useGuidedCreatorStore.getState()
+      expect(state.conversion.convertedStories).toHaveLength(1)
+      expect(state.conversion.convertedStories[0].id).toBe('s2')
+    })
+
+    it('should add a manual story with draft status', () => {
+      useGuidedCreatorStore.getState().setConvertedStories([])
+      useGuidedCreatorStore.getState().addManualStory()
+
+      const state = useGuidedCreatorStore.getState()
+      expect(state.conversion.convertedStories).toHaveLength(1)
+      expect(state.conversion.convertedStories[0].status).toBe('draft')
+      expect(state.conversion.convertedStories[0].id).toBeTruthy()
+    })
+
+    it('should track currentEditingStory and clear on accept', () => {
+      const stories = [makeGenerated('s1')]
+      useGuidedCreatorStore.getState().setConvertedStories(stories)
+      useGuidedCreatorStore.getState().editStory('s1')
+      expect(useGuidedCreatorStore.getState().conversion.currentEditingStory).toBe('s1')
+
+      useGuidedCreatorStore.getState().acceptStory('s1')
+      expect(useGuidedCreatorStore.getState().conversion.currentEditingStory).toBeNull()
+    })
+  })
+
   describe('session reset includes conversion', () => {
     it('should reset conversion when initSession is called', () => {
-      useGuidedCreatorStore.getState().setConvertedStories([{ id: 1 }])
+      useGuidedCreatorStore.getState().setConvertedStories([makeMinimalStory('s1')])
       useGuidedCreatorStore.getState().initSession('user_story')
 
       const state = useGuidedCreatorStore.getState()
@@ -155,7 +242,7 @@ describe('Guided Creator Store - Conversion', () => {
     })
 
     it('should reset conversion when reset is called', () => {
-      useGuidedCreatorStore.getState().setConvertedStories([{ id: 1 }])
+      useGuidedCreatorStore.getState().setConvertedStories([makeMinimalStory('s1')])
       useGuidedCreatorStore.getState().reset()
 
       const state = useGuidedCreatorStore.getState()

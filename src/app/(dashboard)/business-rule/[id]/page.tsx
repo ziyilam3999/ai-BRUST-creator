@@ -17,9 +17,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { ArrowLeft, Edit, Trash2, Loader2 } from 'lucide-react'
+import { ArrowLeft, Edit, Trash2, Loader2, ArrowRight } from 'lucide-react'
 import type { Document } from '@/lib/db/schema'
 import type { BusinessRuleData } from '@/types/business-rule'
+import type { UserStoryData } from '@/types/user-story'
+import { useConversion } from '@/hooks/use-conversion'
+import { useGuidedCreatorStore } from '@/stores/guided-creator-store'
+import type { GeneratedStory } from '@/stores/guided-creator-store'
+import {
+  ConversionPrompt,
+  AnalysisPanel,
+  SideBySideView,
+  StoryEditorModal,
+  ConversionSummary,
+} from '@/components/guided/conversion'
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-yellow-100 text-yellow-800',
@@ -35,6 +46,14 @@ export default function BusinessRuleDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+  const [showConversion, setShowConversion] = useState(false)
+  const [editingStory, setEditingStory] = useState<GeneratedStory | null>(null)
+  const [isSavingStories, setIsSavingStories] = useState(false)
+
+  const { analyze, convert } = useConversion()
+  const conversion = useGuidedCreatorStore((state) => state.conversion)
+  const { acceptStory, editStory, updateStory, deleteStory, addManualStory, resetConversion } = useGuidedCreatorStore()
 
   const id = params.id as string
 
@@ -75,6 +94,89 @@ export default function BusinessRuleDetailPage() {
       setIsDeleting(false)
     }
   }
+
+  const handleStatusChange = async (newStatus: string) => {
+    setIsUpdatingStatus(true)
+    try {
+      const response = await fetch(`/api/documents/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (!response.ok) {
+        throw new Error('Failed to update status')
+      }
+      const data = await response.json()
+      setDocument(data.data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update status')
+    } finally {
+      setIsUpdatingStatus(false)
+    }
+  }
+
+  const handleStartConversion = async () => {
+    if (!document) return
+    const content = document.content as BusinessRuleData
+    setShowConversion(true)
+    await analyze(content)
+  }
+
+  const handleAcceptAnalysis = async (count: number) => {
+    if (!document) return
+    const content = document.content as BusinessRuleData
+    await convert(content, { storyCount: count })
+  }
+
+  const handleEditStory = (storyId: string) => {
+    editStory(storyId)
+    const story = conversion.convertedStories.find((s) => s.id === storyId)
+    if (story) setEditingStory(story)
+  }
+
+  const handleSaveStoryEdit = (data: UserStoryData) => {
+    if (editingStory) {
+      updateStory(editingStory.id, data)
+      acceptStory(editingStory.id)
+      setEditingStory(null)
+    }
+  }
+
+  const handleSaveAllStories = async () => {
+    setIsSavingStories(true)
+    try {
+      const failed: string[] = []
+      for (const story of conversion.convertedStories) {
+        const response = await fetch('/api/documents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            documentType: 'user_story',
+            title: story.data.title || story.data.storyId,
+            content: story.data,
+            status: 'draft',
+            relatedItems: [document?.documentId],
+          }),
+        })
+        if (!response.ok) {
+          failed.push(story.data.title || story.data.storyId || story.id)
+        }
+      }
+      if (failed.length > 0) {
+        setError(`Failed to save ${failed.length} story(ies): ${failed.join(', ')}`)
+        return
+      }
+      resetConversion()
+      setShowConversion(false)
+      router.push('/history')
+    } catch {
+      setError('Failed to save stories')
+    } finally {
+      setIsSavingStories(false)
+    }
+  }
+
+  const isCompletedBR = document?.status === 'review' || document?.status === 'approved'
 
   if (isLoading) {
     return (
@@ -117,6 +219,25 @@ export default function BusinessRuleDetailPage() {
             </Button>
           </Link>
           <div className="flex gap-2">
+            {document.status === 'draft' && (
+              <Button 
+                size="sm" 
+                onClick={() => handleStatusChange('review')}
+                disabled={isUpdatingStatus}
+              >
+                {isUpdatingStatus ? 'Submitting...' : 'Submit for Review'}
+              </Button>
+            )}
+            {document.status === 'review' && (
+              <Button 
+                size="sm" 
+                onClick={() => handleStatusChange('approved')}
+                disabled={isUpdatingStatus}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {isUpdatingStatus ? 'Approving...' : 'Approve'}
+              </Button>
+            )}
             <Button variant="outline" size="sm" disabled>
               <Edit className="w-4 h-4 mr-2" />
               Edit (Coming Soon)
@@ -277,6 +398,79 @@ export default function BusinessRuleDetailPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* BR-to-US Conversion Section */}
+        {isCompletedBR && !showConversion && conversion.mode === 'none' && (
+          <div className="mt-6">
+            <ConversionPrompt
+              brTitle={document.title}
+              onConvert={handleStartConversion}
+              onSkip={() => {/* no-op, user stays on page */}}
+            />
+          </div>
+        )}
+
+        {showConversion && conversion.mode === 'analyzing' && conversion.analysis && (
+          <div className="mt-6">
+            <AnalysisPanel
+              recommendation={conversion.analysis}
+              onAccept={handleAcceptAnalysis}
+              isAnalyzing={false}
+            />
+          </div>
+        )}
+
+        {showConversion && conversion.mode === 'analyzing' && !conversion.analysis && (
+          <div className="mt-6">
+            <AnalysisPanel
+              recommendation={{ shouldSplit: false, suggestedCount: 1, reasoning: [], proposedStories: [] }}
+              onAccept={handleAcceptAnalysis}
+              isAnalyzing={true}
+            />
+          </div>
+        )}
+
+        {showConversion && conversion.mode === 'converting' && (
+          <div className="mt-6 flex justify-center py-8">
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          </div>
+        )}
+
+        {showConversion && conversion.mode === 'complete' && conversion.convertedStories.length > 0 && (
+          <div className="mt-6 space-y-6">
+            <SideBySideView
+              businessRule={content}
+              stories={conversion.convertedStories}
+              onAccept={acceptStory}
+              onEdit={handleEditStory}
+              onRegenerate={() => {/* TODO: regenerate individual story */}}
+              onDelete={deleteStory}
+              onChat={() => {/* TODO: open chat for story refinement */}}
+            />
+            <ConversionSummary
+              stories={conversion.convertedStories}
+              onSaveAll={handleSaveAllStories}
+              onAddManual={addManualStory}
+              isSaving={isSavingStories}
+            />
+          </div>
+        )}
+
+        {conversion.error && (
+          <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+            {conversion.error}
+          </div>
+        )}
+
+        {/* Story Editor Modal */}
+        {editingStory && (
+          <StoryEditorModal
+            story={editingStory}
+            open={!!editingStory}
+            onSave={handleSaveStoryEdit}
+            onCancel={() => setEditingStory(null)}
+          />
+        )}
       </div>
     </main>
   )

@@ -5,10 +5,118 @@
 ## Current Session
 
 **Date:** 2026-02-06
-**Phase:** AI-Guided Document Creation - Phase 5 BR-to-US Conversion
-**Focus:** BR analyzer, mapper, conversion API, store, UI
+**Phase:** AI-Guided Document Creation - Phase 6A (Conversion UI Suite)
+**Focus:** Full alignment with Implementation Plan §12.4/12.5/12.8 — 7 conversion components, typed store, BR detail integration
 
 ### Current Task
+
+#### Phase 6A: Conversion Integration & Polish (~20 hours)
+Full alignment with Implementation Plan Section 12.4/12.5/12.8.
+Build complete conversion UI component suite, typed store, and BR detail page integration.
+
+| # | Task | Est. Hours | Dependencies | Status |
+|---|------|------------|--------------|--------|
+| 6A.1 | Create `conversion/index.ts` barrel exports | 0.5 | Phase 5 complete | [x] |
+| 6A.2 | Create `conversion/conversion-prompt.tsx` ("Convert to US?" prompt) | 1.5 | 6A.1 | [x] |
+| 6A.3 | Create `conversion/analysis-panel.tsx` (AI split recommendation + slider) | 2 | 6A.1 | [x] |
+| 6A.4 | Create `conversion/story-preview-card.tsx` (single US with Accept/Edit/Regenerate/Delete/Chat) | 2.5 | 6A.1 | [x] |
+| 6A.5 | Create `conversion/story-preview-list.tsx` (list container for story cards) | 1.5 | 6A.4 | [x] |
+| 6A.6 | Create `conversion/side-by-side-view.tsx` (BR left, US right) | 2 | 6A.5 | [x] |
+| 6A.7 | Create `conversion/story-editor-modal.tsx` (inline US editor modal) | 2.5 | 6A.4 | [x] |
+| 6A.8 | Create `conversion/conversion-summary.tsx` (final review before save) | 1.5 | 6A.5 | [x] |
+| 6A.9 | Update guided-creator-store: `GeneratedStory` interface, per-story actions | 2 | 6A.1-6A.8 | [x] |
+| 6A.10 | Wire conversion into BR detail page (`/business-rule/[id]`) | 1.5 | 6A.1-6A.9 | [x] |
+| 6A.11 | E2E testing for full conversion flow (Playwright) | 2 | 6A.10 | [x] |
+| 6A.12 | Performance optimization and final polish | 1 | 6A.11 | [x] |
+
+**Phase 6A Files (Planned):**
+| File | Purpose |
+|------|---------|
+| `src/components/guided/conversion/index.ts` | New: barrel exports for conversion components |
+| `src/components/guided/conversion/conversion-prompt.tsx` | New: "Convert to US?" prompt after BR completion (Plan §12.4) |
+| `src/components/guided/conversion/analysis-panel.tsx` | New: AI split recommendation with story count slider (Plan §12.4) |
+| `src/components/guided/conversion/story-preview-card.tsx` | New: single US preview with Accept/Edit/Regenerate/Delete/Chat (Plan §12.4) |
+| `src/components/guided/conversion/story-preview-list.tsx` | New: container for generated story cards (Plan §12.4) |
+| `src/components/guided/conversion/side-by-side-view.tsx` | New: BR on left, US(s) on right (Plan §12.4) |
+| `src/components/guided/conversion/story-editor-modal.tsx` | New: inline US editor modal (Plan §12.4) |
+| `src/components/guided/conversion/conversion-summary.tsx` | New: final review before bulk save (Plan §12.4) |
+| `src/stores/guided-creator-store.ts` | Modify: add GeneratedStory interface, per-story actions (Plan §12.5) |
+| `src/app/(dashboard)/business-rule/[id]/page.tsx` | Modify: wire ConversionPrompt + AnalysisPanel + SideBySideView |
+| `e2e/flows/conversion.spec.ts` | New: E2E conversion flow test (Plan §12.8) |
+| `__tests__/components/guided/conversion/` | New: conversion component tests |
+| `__tests__/unit/stores/guided-creator-conversion.test.ts` | Modify: add GeneratedStory store action tests |
+
+**Phase 6A Store Updates (Plan §12.5):**
+```typescript
+interface GeneratedStory {
+  id: string
+  data: UserStoryData
+  status: 'draft' | 'accepted' | 'editing'
+  conversationHistory: ConversationMessage[]
+}
+// New actions: acceptStory, editStory, updateStory, regenerateStory,
+//              deleteStory, addManualStory, saveAllStories
+```
+
+**Phase 6A Supersedes:** `src/components/guided/conversion-panel.tsx` (Phase 5 simplified version)
+**Dropped from original 6A scope:** Batch conversion from history page (not in implementation plan)
+
+#### Phase 6B: Auto-Publish Suggestions (~25 hours)
+After document completion, AI proactively suggests publishing to Confluence/JIRA.
+*(Implementation Plan Section 13)*
+
+| # | Task | Est. Hours | Dependencies | Status |
+|---|------|------------|--------------|--------|
+| 6B.1 | Create `atlassian-connection.ts` (connection state checker) | 2 | Existing OAuth (Phase 3.2) | [ ] |
+| 6B.2 | Create `publish-suggestion-card.tsx` (AI suggestion in chat) | 3 | 6B.1, Guided Store | [ ] |
+| 6B.3 | Create `connection-prompt.tsx` ("Connect Atlassian" prompt) | 2 | Existing OAuth flow | [ ] |
+| 6B.4 | Create `publish-preview-confluence.tsx` (Confluence page preview) | 3 | Existing Confluence API | [ ] |
+| 6B.5 | Create `publish-preview-jira.tsx` (JIRA issue preview) | 3 | Existing JIRA API | [ ] |
+| 6B.6 | Create `publish-success-message.tsx` (success with link) | 1 | — | [ ] |
+| 6B.7 | Update guided-creator-store with PublishSuggestionState | 2 | 6B.1-6B.6 | [ ] |
+| 6B.8 | Integration with completion triggers (≥80% threshold) | 2 | 6B.7 | [ ] |
+| 6B.9 | Integration with BR-to-US flow (suggest after conversion) | 2 | 6B.8, Phase 5 | [ ] |
+| 6B.10 | Add publish suggestion AI prompts to guided-prompts.ts | 1 | 6B.2 | [ ] |
+| 6B.11 | Unit tests (connection state, store, components) | 2 | 6B.1-6B.10 | [ ] |
+| 6B.12 | Integration tests (trigger flow, publish flow, error handling) | 3 | 6B.1-6B.10 | [ ] |
+
+**Phase 6B Files (Planned):**
+| File | Purpose |
+|------|---------|
+| `src/lib/guided/atlassian-connection.ts` | New: check Atlassian connection state, token validity, available resources |
+| `src/components/guided/publish/index.ts` | New: barrel exports |
+| `src/components/guided/publish/publish-suggestion-card.tsx` | New: AI suggestion card with Yes/Later/No actions |
+| `src/components/guided/publish/connection-prompt.tsx` | New: "Connect Atlassian" prompt for unconnected users |
+| `src/components/guided/publish/publish-preview-confluence.tsx` | New: Confluence page preview before publish |
+| `src/components/guided/publish/publish-preview-jira.tsx` | New: JIRA issue preview before publish |
+| `src/components/guided/publish/publish-success-message.tsx` | New: success confirmation with direct link |
+| `src/stores/guided-creator-store.ts` | Modify: add PublishSuggestionState + 4 publish actions |
+| `src/lib/ai/guided-prompts.ts` | Modify: add PUBLISH_SUGGESTION_PROMPTS |
+| `__tests__/unit/lib/atlassian-connection.test.ts` | New: connection state tests |
+| `__tests__/unit/stores/guided-creator-publish.test.ts` | New: publish suggestion store tests |
+| `__tests__/components/guided/publish-suggestion.test.tsx` | New: publish UI component tests |
+| `__tests__/integration/api/publish-suggestion.test.ts` | New: publish flow integration tests |
+
+**Phase 6B State Management (from Implementation Plan):**
+```typescript
+interface PublishSuggestionState {
+  showSuggestion: boolean
+  dismissed: boolean
+  remindLater: boolean
+  remindAt: string | null  // ISO timestamp
+  publishedUrl: string | null
+}
+// Actions: showPublishSuggestion, dismissPublishSuggestion, setRemindLater, setPublished
+```
+
+**Phase 6B Trigger Points:**
+1. Document reaches ≥80% completion → show suggestion
+2. User clicks "Submit for Review" or "Save as Approved" → show suggestion
+3. After BR-to-US conversion saves stories → show suggestion per story
+
+- Current tests: 461 passing (424 baseline + 37 Phase 6A)
+
+### Phase 5 (Previous - Complete)
 - [x] Phase 5 Task 1: Write Phase 5 tests (71 tests, RED phase)
 - [x] Phase 5 Task 2: Implement br-to-us-analyzer (parseConditions, hasComplexLogic, extractPersonas, analyzeForUserStories)
 - [x] Phase 5 Task 3: Implement br-to-us-mapper (mapBRtoUS, extractPersonaFromRule, extractActionFromRule, mapPriority)
@@ -257,7 +365,148 @@
 
 ---
 
+### AI-Guided Document Creation Checklist
+
+#### Guided Phase 1: Store & Core Logic - COMPLETE
+- [x] Zustand store with persist middleware (guided-creator-store.ts)
+- [x] Completion calculator with section weights
+- [x] Advice engine for user guidance
+- [x] AI prompts for BR + US guided creation (SBVR/INVEST)
+- [x] Input sanitizer for prompt injection + XSS prevention
+- [x] Guided AI streaming endpoint with rate limiting
+- [x] 105 tests (281 total passing)
+
+#### Guided Phase 2: UI Components - COMPLETE
+- [x] Split-panel layout (GuidedCreatorContainer)
+- [x] Conversation panel with chat input
+- [x] Document panel with section cards
+- [x] Section navigation with status icons
+- [x] Message bubbles (AI/user/system)
+- [x] Action bar (Accept/Edit/Regenerate/Skip)
+- [x] 35 tests (316 total passing)
+
+#### Guided Phase 3: Integration - COMPLETE
+- [x] Response parser with JSON validation + retry
+- [x] useGuidedChat hook (sendMessage, regenerate, saveDraft)
+- [x] Wire Save Draft button
+- [x] 23 tests (339 total passing)
+
+#### Guided Phase 4: Polish & User Stories - COMPLETE
+- [x] Wire ActionBar into ConversationPanel
+- [x] Add keyboard shortcuts (Ctrl+Enter, Meta+Enter)
+- [x] Wire auto-advance after Accept
+- [x] 14 tests (353 total passing)
+
+#### Guided Phase 5: BR-to-US Conversion - COMPLETE
+- [x] BR-to-US Analyzer (parseConditions, hasComplexLogic, extractPersonas, analyzeForUserStories)
+- [x] BR-to-US Mapper (mapBRtoUS, extractPersonaFromRule, extractActionFromRule, mapPriority)
+- [x] Convert API endpoint (/api/ai/convert)
+- [x] ConversionState in guided-creator-store
+- [x] ConversionPanel UI component
+- [x] useConversion hook
+- [x] 71 tests (424 total passing)
+
+#### Guided Phase 6A: Conversion Integration & Polish (~20h) - NEXT
+*(Full alignment with Implementation Plan §12.4/12.5/12.8)*
+- [ ] 6A.1: Create `conversion/index.ts` barrel exports
+- [ ] 6A.2: Create `conversion/conversion-prompt.tsx` ("Convert to US?" prompt)
+- [ ] 6A.3: Create `conversion/analysis-panel.tsx` (AI split recommendation + slider)
+- [ ] 6A.4: Create `conversion/story-preview-card.tsx` (Accept/Edit/Regenerate/Delete/Chat)
+- [ ] 6A.5: Create `conversion/story-preview-list.tsx` (list container)
+- [ ] 6A.6: Create `conversion/side-by-side-view.tsx` (BR left, US right)
+- [ ] 6A.7: Create `conversion/story-editor-modal.tsx` (inline US editor)
+- [ ] 6A.8: Create `conversion/conversion-summary.tsx` (final review before save)
+- [ ] 6A.9: Update guided-creator-store: GeneratedStory + per-story actions
+- [ ] 6A.10: Wire conversion into BR detail page
+- [ ] 6A.11: E2E testing for full conversion flow (Playwright)
+- [ ] 6A.12: Performance optimization and final polish
+
+#### Guided Phase 6B: Auto-Publish Suggestions (~25h) - PLANNED
+*(Implementation Plan Section 13 — Auto-publish to Confluence/JIRA after completion)*
+- [ ] 6B.1: Create `atlassian-connection.ts` (connection state checker)
+- [ ] 6B.2: Create `publish-suggestion-card.tsx` (AI suggestion card)
+- [ ] 6B.3: Create `connection-prompt.tsx` ("Connect Atlassian" prompt)
+- [ ] 6B.4: Create `publish-preview-confluence.tsx` (Confluence preview)
+- [ ] 6B.5: Create `publish-preview-jira.tsx` (JIRA preview)
+- [ ] 6B.6: Create `publish-success-message.tsx` (success + link)
+- [ ] 6B.7: Update guided-creator-store with PublishSuggestionState
+- [ ] 6B.8: Integration with completion triggers (≥80% threshold)
+- [ ] 6B.9: Integration with BR-to-US flow (suggest after conversion)
+- [ ] 6B.10: Add publish suggestion AI prompts
+- [ ] 6B.11: Unit tests (connection, store, components)
+- [ ] 6B.12: Integration tests (trigger flow, publish flow, errors)
+
+---
+
 ## Session History
+
+### 2026-02-06 - Guided Phase 5 BR-to-US Conversion Complete
+
+**Focus:** Implement BR-to-US conversion with analyzer, mapper, API, store, and UI
+
+**Accomplished:**
+- Created `src/lib/guided/br-to-us-analyzer.ts`:
+  - `parseConditions()` - Split AND/OR conditions
+  - `hasComplexLogic()` - Detect nested parentheses, BETWEEN, IN clauses
+  - `extractPersonas()` - Find user/admin/manager keywords
+  - `analyzeForUserStories()` - Recommend split with BABOK-based criteria
+- Created `src/lib/guided/br-to-us-mapper.ts`:
+  - `mapBRtoUS()` - Transform BR to UserStory format
+  - `extractPersonaFromRule()` - Extract role from IF statement
+  - `extractActionFromRule()` - Extract feature from THEN statement
+  - `extractBenefitFromRule()` - Generate benefit from context
+  - `mapPriority()` - Convert BR priority to MoSCoW (critical→must, high→should, etc.)
+- Created `src/app/api/ai/convert/route.ts`:
+  - Analyze endpoint (returns analysis with split recommendation)
+  - Convert endpoint (returns generated user stories)
+- Updated `src/stores/guided-creator-store.ts`:
+  - Added ConversionState (mode, analysis, convertedStories, error)
+  - Added 6 conversion actions (startConversion, setConvertedStories, etc.)
+- Created `src/components/guided/conversion-panel.tsx`:
+  - Shows analysis results with split recommendation
+  - Displays proposed stories with size estimates
+  - Story selection for converted stories
+- Created `src/hooks/use-conversion.ts`:
+  - `analyze()` - Analyze BR for splitting
+  - `convert()` - Convert BR to user stories
+
+**Split Criteria (BABOK 3.0 / INVEST based):**
+- Multiple conditions: 0.35 weight (Independence indicator)
+- Multiple personas: 0.30 weight (Different value streams)
+- Many exceptions: 0.20 weight (Hidden complexity)
+- Distinct paths: 0.15 weight (Different business value)
+- Any major criterion alone triggers split recommendation
+
+**Test Status:**
+- New tests: 71 (21 analyzer + 18 mapper + 8 API + 14 store + 10 UI)
+- Total tests: 424 passing
+
+**Commit:** `a8bead3` - feat(guided): implement BR-to-US conversion (Phase 5)
+
+**Next Steps:**
+1. Guided Phase 6: Final Integration & Polish
+2. Wire conversion into BR detail page
+3. E2E testing
+
+**Blockers:** None
+
+---
+
+### 2026-02-06 - Guided Phase 4 Polish Complete
+
+**Focus:** Wire ActionBar, auto-advance, keyboard shortcuts
+
+**Accomplished:**
+- Wired ActionBar into ConversationPanel for draft proposals
+- Added keyboard shortcuts (Ctrl+Enter, Meta+Enter for send)
+- Implemented auto-advance after Accept (getNextSection helper)
+- 14 new tests
+
+**Test Status:** 353 passing
+
+**Commit:** `a75e802` - feat(guided): complete Phase 4 polish
+
+---
 
 ### 2026-01-29 - Phase 3.4 JIRA Publishing Complete (MVP COMPLETE)
 

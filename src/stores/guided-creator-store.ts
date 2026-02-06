@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import type { UserStoryData } from '@/types/user-story'
+import { INITIAL_USER_STORY } from '@/types/user-story'
 
 // Section definitions for Business Rules
 export type BRSection =
@@ -58,11 +60,19 @@ export interface ConversionAnalysis {
   proposedStories: ProposedStory[]
 }
 
+export interface GeneratedStory {
+  id: string
+  data: UserStoryData
+  status: 'draft' | 'accepted' | 'editing'
+  conversationHistory: ConversationMessage[]
+}
+
 export interface ConversionState {
   mode: ConversionMode
   analysis: ConversionAnalysis | null
-  convertedStories: unknown[] // UserStoryData[]
+  convertedStories: GeneratedStory[]
   selectedStoryIndex: number
+  currentEditingStory: string | null
   error: string | null
 }
 
@@ -152,20 +162,28 @@ export interface GuidedCreatorState {
 
   // Conversion actions
   startConversion: (analysis: ConversionAnalysis) => void
-  setConvertedStories: (stories: unknown[]) => void
+  setConvertedStories: (stories: GeneratedStory[]) => void
   selectConvertedStory: (index: number) => void
   resetConversion: () => void
   setConversionError: (error: string | null) => void
   setConversionMode: (mode: ConversionMode) => void
+
+  // Per-story actions (Plan §12.5)
+  acceptStory: (storyId: string) => void
+  editStory: (storyId: string) => void
+  updateStory: (storyId: string, data: Partial<UserStoryData>) => void
+  deleteStory: (storyId: string) => void
+  addManualStory: () => void
 }
 
-const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+const generateId = () => `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
 
 const INITIAL_CONVERSION_STATE: ConversionState = {
   mode: 'none',
   analysis: null,
   convertedStories: [],
   selectedStoryIndex: 0,
+  currentEditingStory: null,
   error: null,
 }
 
@@ -400,6 +418,74 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
           conversion: {
             ...state.conversion,
             mode,
+          },
+        }))
+      },
+
+      // Per-story actions (Plan §12.5)
+      acceptStory: (storyId) => {
+        set((state) => ({
+          conversion: {
+            ...state.conversion,
+            convertedStories: state.conversion.convertedStories.map((s) =>
+              s.id === storyId ? { ...s, status: 'accepted' as const } : s
+            ),
+            currentEditingStory: state.conversion.currentEditingStory === storyId
+              ? null
+              : state.conversion.currentEditingStory,
+          },
+        }))
+      },
+
+      editStory: (storyId) => {
+        set((state) => ({
+          conversion: {
+            ...state.conversion,
+            convertedStories: state.conversion.convertedStories.map((s) =>
+              s.id === storyId ? { ...s, status: 'editing' as const } : s
+            ),
+            currentEditingStory: storyId,
+          },
+        }))
+      },
+
+      updateStory: (storyId, data) => {
+        set((state) => ({
+          conversion: {
+            ...state.conversion,
+            convertedStories: state.conversion.convertedStories.map((s) =>
+              s.id === storyId ? { ...s, data: { ...s.data, ...data } } : s
+            ),
+          },
+        }))
+      },
+
+      deleteStory: (storyId) => {
+        set((state) => ({
+          conversion: {
+            ...state.conversion,
+            convertedStories: state.conversion.convertedStories.filter((s) => s.id !== storyId),
+            currentEditingStory: state.conversion.currentEditingStory === storyId
+              ? null
+              : state.conversion.currentEditingStory,
+          },
+        }))
+      },
+
+      addManualStory: () => {
+        const id = `manual-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
+        set((state) => ({
+          conversion: {
+            ...state.conversion,
+            convertedStories: [
+              ...state.conversion.convertedStories,
+              {
+                id,
+                data: { ...INITIAL_USER_STORY },
+                status: 'draft' as const,
+                conversationHistory: [],
+              },
+            ],
           },
         }))
       },

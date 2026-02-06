@@ -88,9 +88,10 @@ ai-BRUST-creator/
 │   │   ├── api/
 │   │   │   ├── auth/[...nextauth]/route.ts
 │   │   │   ├── ai/
-│   │   │   │   │   ├── chat/route.ts
+│   │   │   │   ├── chat/route.ts
 │   │   │   │   ├── generate/route.ts
-│   │   │   │   ├── guided/route.ts   # AI-guided creation (streaming)
+│   │   │   │   ├── guided/route.ts    # AI-guided creation (streaming)
+│   │   │   │   ├── convert/route.ts   # BR-to-US analyze + convert (Phase 5)
 │   │   │   │   └── clarify/route.ts
 │   │   │   ├── documents/
 │   │   │   │   ├── route.ts
@@ -121,7 +122,24 @@ ai-BRUST-creator/
 │   │   │   ├── section-navigation.tsx
 │   │   │   ├── completion-summary.tsx
 │   │   │   ├── message-bubble.tsx
-│   │   │   └── action-bar.tsx
+│   │   │   ├── action-bar.tsx
+│   │   │   ├── conversion-panel.tsx    # BR-to-US conversion UI (Phase 5, superseded by conversion/)
+│   │   │   ├── conversion/            # Full conversion component suite (Phase 6A) ⏳
+│   │   │   │   ├── index.ts           # Barrel exports (Plan §12.4)
+│   │   │   │   ├── conversion-prompt.tsx    # "Convert to US?" prompt
+│   │   │   │   ├── analysis-panel.tsx       # AI split recommendation + slider
+│   │   │   │   ├── story-preview-card.tsx   # Single US with actions
+│   │   │   │   ├── story-preview-list.tsx   # List container for cards
+│   │   │   │   ├── side-by-side-view.tsx    # BR left, US right
+│   │   │   │   ├── story-editor-modal.tsx   # Inline US editor modal
+│   │   │   │   └── conversion-summary.tsx   # Final review before save
+│   │   │   └── publish/               # Auto-publish suggestions (Phase 6B) ⏳
+│   │   │       ├── index.ts
+│   │   │       ├── publish-suggestion-card.tsx
+│   │   │       ├── connection-prompt.tsx
+│   │   │       ├── publish-preview-confluence.tsx
+│   │   │       ├── publish-preview-jira.tsx
+│   │   │       └── publish-success-message.tsx
 │   │   ├── chat/
 │   │   │   └── chat-panel.tsx
 │   │   ├── providers/
@@ -139,7 +157,10 @@ ai-BRUST-creator/
 │   │   │   └── input-sanitizer.ts# Prompt injection + XSS prevention
 │   │   ├── guided/
 │   │   │   ├── completion-calculator.ts # Section-weighted scoring
-│   │   │   └── advice-engine.ts  # Completion-based guidance
+│   │   │   ├── advice-engine.ts         # Completion-based guidance
+│   │   │   ├── br-to-us-analyzer.ts     # BR analysis for splitting (Phase 5)
+│   │   │   ├── br-to-us-mapper.ts       # BR-to-US field mapping (Phase 5)
+│   │   │   └── atlassian-connection.ts  # Atlassian connection state (Phase 6B) ⏳
 │   │   ├── api/
 │   │   │   ├── confluence.ts
 │   │   │   └── jira.ts
@@ -148,7 +169,9 @@ ai-BRUST-creator/
 │   │   │   └── schema.ts
 │   │   └── utils.ts              # Utility functions (cn)
 │   ├── hooks/
-│   │   └── use-documents.ts      # Document list data hook
+│   │   ├── use-documents.ts       # Document list data hook
+│   │   ├── use-guided-chat.ts     # Guided creation chat hook (Phase 3)
+│   │   └── use-conversion.ts      # BR-to-US analyze/convert hook (Phase 5)
 │   └── types/
 │       ├── business-rule.ts
 │       └── user-story.ts
@@ -270,8 +293,11 @@ ai-BRUST-creator/
 | `__tests__/unit/lib/br-to-us-analyzer.test.ts` | Analyzer unit tests (21) | ✅ Created |
 | `__tests__/unit/lib/br-to-us-mapper.test.ts` | Mapper unit tests (18) | ✅ Created |
 | `__tests__/integration/api/convert.test.ts` | Convert API integration tests (8) | ✅ Created |
-| `__tests__/unit/stores/guided-creator-conversion.test.ts` | Store conversion tests (14) | ✅ Created |
-| `__tests__/components/guided/conversion-panel.test.tsx` | Conversion panel UI tests (10) | ✅ Created |
+| `__tests__/unit/stores/guided-creator-conversion.test.ts` | Store conversion tests (22) | ✅ Updated P6A |
+| `__tests__/components/guided/conversion-panel.test.tsx` | Conversion panel UI tests (10) | ✅ Updated P6A |
+| `__tests__/unit/hooks/use-conversion.test.ts` | useConversion hook tests (6) | ✅ Created P6A |
+| `__tests__/components/guided/conversion/conversion-components.test.tsx` | 7 conversion component tests (25) | ✅ Created P6A |
+| `e2e/flows/conversion.spec.ts` | E2E conversion flow tests (4) | ✅ Created P6A |
 
 ## Modules / Components
 
@@ -308,6 +334,9 @@ ai-BRUST-creator/
 | Convert API | `src/app/api/ai/convert/route.ts` | BR-to-US analyze and convert endpoint | ✅ Guided P5 |
 | Conversion UI | `src/components/guided/conversion-panel.tsx` | Conversion progress and story selection | ✅ Guided P5 |
 | Conversion Hook | `src/hooks/use-conversion.ts` | analyze() and convert() API hook | ✅ Guided P5 |
+| Conversion UI Suite | `src/components/guided/conversion/` | 7-component conversion UI (Plan §12.4): prompt, analysis, preview card/list, side-by-side, editor modal, summary | ⏳ Guided P6A |
+| Atlassian Connection | `src/lib/guided/atlassian-connection.ts` | Check connection state + token validity | ⏳ Guided P6B |
+| Publish Suggestion UI | `src/components/guided/publish/` | Auto-publish suggestion components (6 files) | ⏳ Guided P6B |
 
 ## Entry Points
 
@@ -329,6 +358,7 @@ ai-BRUST-creator/
 | `/api/ai/chat` | POST | AI chat with streaming |
 | `/api/ai/generate` | POST | Generate document from wizard data |
 | `/api/ai/guided` | POST | AI-guided creation (streaming + rate limited) |
+| `/api/ai/convert` | POST | BR-to-US analyze + convert |
 | `/api/ai/clarify` | POST | Get clarification questions |
 | `/api/documents` | GET, POST | List/create documents |
 | `/api/documents/[id]` | GET, PUT, DELETE | Document CRUD |
@@ -378,4 +408,4 @@ ai-BRUST-creator/
 
 ---
 
-**Last Updated:** 2026-02-05
+**Last Updated:** 2026-02-06

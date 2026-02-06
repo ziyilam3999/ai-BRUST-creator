@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { ConversionPanel } from '@/components/guided/conversion-panel'
 import { useGuidedCreatorStore } from '@/stores/guided-creator-store'
-import type { ConversionAnalysis, ConversionState } from '@/stores/guided-creator-store'
+import type { ConversionAnalysis, ConversionState, GeneratedStory } from '@/stores/guided-creator-store'
+import { INITIAL_USER_STORY } from '@/types/user-story'
 
 // Mock the store
 vi.mock('@/stores/guided-creator-store', () => ({
@@ -18,6 +19,7 @@ describe('ConversionPanel', () => {
       analysis: null,
       convertedStories: [],
       selectedStoryIndex: 0,
+      currentEditingStory: null,
       error: null,
       ...conversion,
     }
@@ -144,13 +146,20 @@ describe('ConversionPanel', () => {
     expect(onProceedToConvert).toHaveBeenCalled()
   })
 
+  const makeGeneratedStory = (storyId: string, title: string): GeneratedStory => ({
+    id: `gen-${storyId}`,
+    data: { ...INITIAL_USER_STORY, storyId, title },
+    status: 'draft',
+    conversationHistory: [],
+  })
+
   it('should show converted stories when complete', () => {
     vi.mocked(useGuidedCreatorStore).mockReturnValue(
       createMockState({
         mode: 'complete',
         convertedStories: [
-          { storyId: 'US-001', title: 'First Story' },
-          { storyId: 'US-002', title: 'Second Story' },
+          makeGeneratedStory('US-001', 'First Story'),
+          makeGeneratedStory('US-002', 'Second Story'),
         ],
       })
     )
@@ -167,8 +176,8 @@ describe('ConversionPanel', () => {
       createMockState({
         mode: 'complete',
         convertedStories: [
-          { storyId: 'US-001', title: 'First' },
-          { storyId: 'US-002', title: 'Second' },
+          makeGeneratedStory('US-001', 'First'),
+          makeGeneratedStory('US-002', 'Second'),
         ],
         selectedStoryIndex: 1,
       })
@@ -188,8 +197,8 @@ describe('ConversionPanel', () => {
       createMockState({
         mode: 'complete',
         convertedStories: [
-          { storyId: 'US-001', title: 'First' },
-          { storyId: 'US-002', title: 'Second' },
+          makeGeneratedStory('US-001', 'First'),
+          makeGeneratedStory('US-002', 'Second'),
         ],
       })
     )

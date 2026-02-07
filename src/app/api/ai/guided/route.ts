@@ -46,20 +46,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Rate limit check
-  const rateLimit = checkRateLimit(session.user.id)
-  if (!rateLimit.allowed) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded. Please wait a moment before trying again.' },
-      {
-        status: 429,
-        headers: {
-          'X-RateLimit-Limit': rateLimit.limit.toString(),
-          'X-RateLimit-Remaining': '0',
-          'X-RateLimit-Reset': rateLimit.resetAt.toString(),
-        },
-      }
-    )
+  // Rate limit check — fail-open in dev so a broken limiter doesn't block all requests.
+  // In production, replace with Redis-based limiter and fail-closed (remove try-catch).
+  try {
+    const rateLimit = checkRateLimit(session.user.id)
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please wait a moment before trying again.' },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimit.limit.toString(),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': rateLimit.resetAt.toString(),
+          },
+        }
+      )
+    }
+  } catch (rateLimitError) {
+    console.warn('Rate limiter failed, allowing request:', rateLimitError)
   }
 
   try {
@@ -82,6 +87,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Cap conversation history to prevent abuse (client sends slice(-20), but server enforces its own limit)
+    const safeHistory = (conversationHistory || []).slice(-25)
+
     // Sanitize user input
     const sanitizedInput = sanitizeUserInput(userInput)
 
@@ -95,7 +103,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Add section-specific guidance
-    const sectionGuide = SECTION_PROMPTS[documentType]?.[currentSection as keyof typeof SECTION_PROMPTS.business_rule]
+    const prompts = SECTION_PROMPTS[documentType] as Record<string, { initial: string; followUp: (input: string) => string }> | undefined
+    const sectionGuide = prompts?.[currentSection]
     if (sectionGuide) {
       systemPrompt += `\n\nSection Guidance:\n${sectionGuide.initial}`
     }
@@ -109,7 +118,7 @@ export async function POST(request: NextRequest) {
 
     // Build message array from conversation history + new input
     const messages = [
-      ...(conversationHistory || []),
+      ...safeHistory,
       { role: 'user' as const, content: sanitizedInput },
     ]
 

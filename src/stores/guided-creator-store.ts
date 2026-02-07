@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { UserStoryData } from '@/types/user-story'
 import { INITIAL_USER_STORY } from '@/types/user-story'
+import { getCompletionAdvice } from '@/lib/guided/advice-engine'
 
 // Section definitions for Business Rules
 export type BRSection =
@@ -203,7 +204,7 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
       isAiThinking: false,
       isManualEditBlocked: false,
       overallCompletion: 0,
-      canSaveDraft: true,
+      canSaveDraft: false,
       isReadyForReview: false,
       lastSessionSummary: null,
       sessionStartedAt: new Date().toISOString(),
@@ -222,7 +223,7 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
           isAiThinking: false,
           isManualEditBlocked: false,
           overallCompletion: 0,
-          canSaveDraft: true,
+          canSaveDraft: false,
           isReadyForReview: false,
           sessionStartedAt: new Date().toISOString(),
           conversion: INITIAL_CONVERSION_STATE,
@@ -320,8 +321,10 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
           ? Math.round((totalWeightedScore / totalWeight) * 100)
           : 0
 
+        const advice = getCompletionAdvice(overallCompletion)
         set({
           overallCompletion,
+          canSaveDraft: advice.canSave,
           isReadyForReview: overallCompletion >= 80,
         })
       },
@@ -359,7 +362,7 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
           isAiThinking: false,
           isManualEditBlocked: false,
           overallCompletion: 0,
-          canSaveDraft: true,
+          canSaveDraft: false,
           isReadyForReview: false,
           lastSessionSummary: null,
           sessionStartedAt: new Date().toISOString(),

@@ -41,6 +41,57 @@ Captures learnings from every task to make the AI protocol stronger. Learnings a
 ### Active Learnings (Pending Review)
 <!-- New learnings go here -->
 
+### [2026-02-07] INSIGHT: canSaveDraft initial state must match advice engine threshold
+
+**Priority:** P4 (INFO)
+**Impact:** UX
+**Context:** Fix L2 — resolving canSaveDraft contradiction in guided-creator-store
+**Scenario:** F (Fix)
+**What happened:**
+1. `canSaveDraft` was hardcoded to `true` in initial state, `initSession`, and `reset`
+2. But `getCompletionAdvice(0).canSave` returns `false` (below 40% threshold)
+3. This meant a brand-new empty document showed "Save Draft" as enabled — misleading
+4. After `calculateCompletion` ran, it would correctly disable it, but the initial state was wrong
+**Root cause:** Initial store state was set independently from the advice engine. When the advice engine's threshold was designed, the store wasn't updated to match.
+**Fix/Improvement:**
+- Set `canSaveDraft: false` in initial state, `initSession`, and `reset`
+- Wire `calculateCompletion` to call `getCompletionAdvice(percent).canSave`
+- Pattern: When a derived value has a source of truth (advice engine), initial state must match the source's output for default inputs
+**Verification:** Test `canSaveDraft` is false at 0% and true at 45% — 3 new tests pass
+**Status:** Captured
+
+---
+
+### [2026-02-07] INSIGHT: Agent Teams are premature for sequential protocol workflows
+
+**Priority:** P3 (MEDIUM)
+**Impact:** WORKFLOW
+**Context:** Evaluating Claude Code Agent Teams (experimental) as replacement for sequential /phase orchestrator with 28 commands and 17 MVP gates
+**Scenario:** A (Plan/Assess)
+**What happened:**
+1. Analyzed Claude Code Agent Teams architecture against current sequential skills/commands workflow
+2. Mapped all 17 MVP gates for teammate compatibility — only 7 pass, 10 break
+3. Projected compliance impact: current 57% would drop to 42-52% with distributed agents
+4. Identified platform constraints: Windows Terminal blocks split-pane mode (in-process only)
+5. Calculated token economics: 2.5-3x cost multiplier (each teammate loads full CLAUDE.md context)
+6. Found no teammate session resumption — conflicts with /context-save architecture
+7. Only 25-40% of /phase workflow can benefit from parallelism (Steps 3-6 QA zone)
+**Root cause:** N/A — proactive architecture evaluation
+**Key findings:**
+1. **Gate compatibility:** Interactive gates (Checkpoint, Execution Gate, Scope Validation) require user input — teammates run autonomously with no user interaction
+2. **Shared file writes:** Multiple teammates writing to progress.md, LEARNINGS.md, session-context.md creates race conditions
+3. **Git serialization:** Only one agent can stage/commit at a time — parallel commits corrupt index
+4. **Compliance enforcement:** Adding distributed agents to a 57% compliance system makes enforcement harder, not easier
+5. **Token cost:** Each teammate loads full CLAUDE.md (~700 lines) + rules files into its context window
+6. **Future hybrid viable:** Read-only QA teammates (/verify + /test in parallel) after implementation phase, once agent teams exits experimental
+7. **Conditions to revisit:** Agent teams stable release, teammate session resumption added, Windows Terminal split-pane support, protocol compliance >= 75%
+**Verification:** Monitor Claude Code Agent Teams feature status; re-evaluate when conditions are met
+**Builds on:** `[2026-02-04] INSIGHT: Claude Code sub-agents are premature optimization`
+**Status:** Captured
+**Proposed protocol change:** None — informational. Future hybrid architecture documented in PROTOCOL_EVOLUTION.md Section 5.8
+
+---
+
 ### [2026-02-05] INSIGHT: Use getByRole instead of getByText for container component tests
 
 **Priority:** P4 (INFO)

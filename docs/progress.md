@@ -4,11 +4,40 @@
 
 ## Current Session
 
-**Date:** 2026-02-06
-**Phase:** AI-Guided Document Creation - Phase 6A (Conversion UI Suite)
-**Focus:** Full alignment with Implementation Plan §12.4/12.5/12.8 — 7 conversion components, typed store, BR detail integration
+**Date:** 2026-02-07
+**Phase:** AI-Guided Document Creation - Pre-Phase 6B Hardening
+**Focus:** Apply 6 targeted fixes from AI-Guided Implementation Review (H3, M1, M5, L1, L2, H1/H2)
 
 ### Current Task
+
+#### Pre-Phase 6B: Implementation Review Fixes
+6 targeted fixes from `tmp/ai-guided-implementation-review.md` applied before Phase 6B begins.
+
+| # | Fix | Finding | Status |
+|---|-----|---------|--------|
+| 1 | Server-side history cap (25 entries) | H3 | [x] |
+| 2 | React error boundaries on guided panels | M1 | [x] |
+| 3 | Rate limiter try-catch fallback | M5 | [x] |
+| 4 | Mobile responsive layout fix | L1 | [x] |
+| 5 | Wire canSaveDraft to advice engine | L2 | [x] |
+| 6 | Security docs + remove dead sanitizeAIOutput | H1/H2 | [x] |
+
+**Files Changed:**
+| File | Purpose |
+|------|---------|
+| `src/app/api/ai/guided/route.ts` | H3 + M5 + type fix |
+| `src/components/guided/guided-creator-container.tsx` | M1 wrapping + L1 responsive |
+| `src/components/guided/guided-error-boundary.tsx` | M1 new component |
+| `src/stores/guided-creator-store.ts` | L2 canSaveDraft wiring |
+| `src/lib/ai/input-sanitizer.ts` | H1/H2 docs + cleanup |
+| `__tests__/unit/lib/input-sanitizer.test.ts` | H2 test cleanup |
+| `__tests__/unit/stores/guided-creator-store.test.ts` | L2 new tests |
+| `__tests__/components/guided/guided-error-boundary.test.tsx` | M1 new tests |
+
+**Tests:** 155 passing (guided suite), 7 new tests added
+**Deferred to Phase 6:** M2 (server auto-save), M3 (undo stack), M4 (parseConditions edge cases)
+
+### Previous Task
 
 #### Phase 6A: Conversion Integration & Polish (~20 hours)
 Full alignment with Implementation Plan Section 12.4/12.5/12.8.

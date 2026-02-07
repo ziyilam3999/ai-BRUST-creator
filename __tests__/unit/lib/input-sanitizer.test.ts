@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
   sanitizeUserInput,
-  sanitizeAIOutput,
   isPromptInjectionAttempt,
 } from '@/lib/ai/input-sanitizer'
 
@@ -72,53 +71,8 @@ describe('Input Sanitizer', () => {
     })
   })
 
-  describe('sanitizeAIOutput', () => {
-    it('should pass through normal text', () => {
-      const output = 'Here is your business rule draft'
-      const result = sanitizeAIOutput(output)
-      expect(result).toBe(output)
-    })
-
-    it('should escape < characters', () => {
-      const output = '<script>alert("xss")</script>'
-      const result = sanitizeAIOutput(output)
-      expect(result).not.toContain('<script>')
-      expect(result).toContain('&lt;')
-    })
-
-    it('should escape > characters', () => {
-      const output = 'value > 10'
-      const result = sanitizeAIOutput(output)
-      expect(result).toContain('&gt;')
-    })
-
-    it('should escape double quotes', () => {
-      const output = 'Say "hello"'
-      const result = sanitizeAIOutput(output)
-      expect(result).toContain('&quot;')
-    })
-
-    it('should escape single quotes', () => {
-      const output = "It's working"
-      const result = sanitizeAIOutput(output)
-      expect(result).toContain('&#x27;')
-    })
-
-    it('should handle complex HTML injection', () => {
-      const output = '<img src="x" onerror="alert(1)">'
-      const result = sanitizeAIOutput(output)
-      // The content is escaped, not removed - it will contain &lt;img but not <img
-      expect(result).not.toContain('<img')
-      expect(result).toContain('&lt;img')
-      // The text 'onerror' is still there but harmless since < and > are escaped
-      expect(result).toContain('onerror')
-    })
-
-    it('should handle empty output', () => {
-      const result = sanitizeAIOutput('')
-      expect(result).toBe('')
-    })
-  })
+  // sanitizeAIOutput was removed — React JSX auto-escaping handles XSS.
+  // See src/lib/ai/input-sanitizer.ts file header for strategy details.
 
   describe('isPromptInjectionAttempt', () => {
     it('should detect "ignore previous" attempts', () => {

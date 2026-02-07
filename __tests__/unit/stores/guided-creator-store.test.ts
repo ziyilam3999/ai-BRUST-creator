@@ -270,6 +270,40 @@ describe('Guided Creator Store', () => {
       expect(overallCompletion).toBeGreaterThan(0)
     })
 
+    it('should set canSaveDraft to false when completion < 40%', () => {
+      const { updateSection, calculateCompletion } = useGuidedCreatorStore.getState()
+
+      act(() => {
+        // Only basicInfo at 100% = 15% overall (below 40% threshold)
+        updateSection('basicInfo', { completionPercent: 100 })
+        calculateCompletion()
+      })
+
+      const { canSaveDraft, overallCompletion } = useGuidedCreatorStore.getState()
+      expect(overallCompletion).toBeLessThan(40)
+      expect(canSaveDraft).toBe(false)
+    })
+
+    it('should set canSaveDraft to true when completion >= 40%', () => {
+      const { updateSection, calculateCompletion } = useGuidedCreatorStore.getState()
+
+      act(() => {
+        // basicInfo 100% (15) + ruleStatement 100% (30) = 45% overall
+        updateSection('basicInfo', { completionPercent: 100 })
+        updateSection('ruleStatement', { completionPercent: 100 })
+        calculateCompletion()
+      })
+
+      const { canSaveDraft, overallCompletion } = useGuidedCreatorStore.getState()
+      expect(overallCompletion).toBeGreaterThanOrEqual(40)
+      expect(canSaveDraft).toBe(true)
+    })
+
+    it('should start with canSaveDraft false', () => {
+      const { canSaveDraft } = useGuidedCreatorStore.getState()
+      expect(canSaveDraft).toBe(false)
+    })
+
     it('should set isReadyForReview when completion >= 80%', () => {
       const { updateSection, calculateCompletion } = useGuidedCreatorStore.getState()
 

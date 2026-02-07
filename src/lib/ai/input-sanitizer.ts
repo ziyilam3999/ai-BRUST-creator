@@ -1,6 +1,13 @@
 /**
- * Input/Output sanitization for AI interactions.
- * Prevents prompt injection attacks and XSS vulnerabilities.
+ * Input sanitization for AI interactions.
+ *
+ * Prompt injection defense: sanitizeUserInput provides defense-in-depth by filtering
+ * known injection patterns. The primary protection is the system prompt structure
+ * itself (Anthropic's message API separates system/user roles), so this layer is
+ * a secondary safeguard.
+ *
+ * XSS strategy: All AI output is rendered via React JSX (no dangerouslySetInnerHTML),
+ * so React's built-in auto-escaping handles XSS. No manual output sanitization needed.
  */
 
 /**
@@ -23,7 +30,8 @@ const MAX_INPUT_LENGTH = 10000
 
 /**
  * Sanitize user input before sending to AI.
- * Removes potential prompt injection patterns.
+ * Defense-in-depth: filters known injection patterns and enforces length limits.
+ * The primary defense is the system/user role separation in the Anthropic message API.
  *
  * @param input - Raw user input
  * @returns Sanitized input safe for AI processing
@@ -42,26 +50,6 @@ export function sanitizeUserInput(input: string): string {
 
   // Limit length to prevent token abuse
   return sanitized.slice(0, MAX_INPUT_LENGTH)
-}
-
-/**
- * Sanitize AI output before rendering in the UI.
- * Prevents XSS attacks by escaping HTML characters.
- *
- * @param output - Raw AI output
- * @returns Sanitized output safe for HTML rendering
- */
-export function sanitizeAIOutput(output: string): string {
-  if (!output) {
-    return ''
-  }
-
-  // Escape HTML special characters to prevent XSS
-  return output
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
 }
 
 /**

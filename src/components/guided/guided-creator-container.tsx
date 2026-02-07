@@ -5,6 +5,7 @@ import { useGuidedCreatorStore } from '@/stores/guided-creator-store'
 import { useGuidedChat } from '@/hooks/use-guided-chat'
 import { ConversationPanel } from './conversation-panel'
 import { DocumentPanel } from './document-panel'
+import { GuidedErrorBoundary } from './guided-error-boundary'
 import { Button } from '@/components/ui/button'
 import { Save, X, Loader2 } from 'lucide-react'
 
@@ -74,12 +75,16 @@ export function GuidedCreatorContainer({ documentType, onClose, onSave }: Props)
         </div>
       </header>
 
-      <div className="flex-1 flex min-h-0">
-        <div className="w-1/2 border-r">
-          <ConversationPanel />
+      <div className="flex-1 flex flex-col lg:flex-row min-h-0">
+        <div className="w-full lg:w-1/2 border-b lg:border-b-0 lg:border-r">
+          <GuidedErrorBoundary panelName="Conversation Panel">
+            <ConversationPanel />
+          </GuidedErrorBoundary>
         </div>
-        <div className="w-1/2">
-          <DocumentPanel />
+        <div className="w-full lg:w-1/2">
+          <GuidedErrorBoundary panelName="Document Panel">
+            <DocumentPanel />
+          </GuidedErrorBoundary>
         </div>
       </div>
     </div>

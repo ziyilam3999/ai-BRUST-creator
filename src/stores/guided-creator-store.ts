@@ -114,6 +114,23 @@ const createInitialSections = (docType: 'business_rule' | 'user_story'): Record<
   }, {} as Record<DocumentSection, SectionState>)
 }
 
+// Publish suggestion state (Plan §13.5)
+export interface PublishSuggestionState {
+  showSuggestion: boolean
+  dismissed: boolean
+  remindLater: boolean
+  remindAt: string | null
+  publishedUrl: string | null
+}
+
+const INITIAL_PUBLISH_STATE: PublishSuggestionState = {
+  showSuggestion: false,
+  dismissed: false,
+  remindLater: false,
+  remindAt: null,
+  publishedUrl: null,
+}
+
 export interface GuidedCreatorState {
   // Document metadata
   documentType: 'business_rule' | 'user_story'
@@ -146,6 +163,9 @@ export interface GuidedCreatorState {
   // Conversion state (BR-to-US)
   conversion: ConversionState
 
+  // Publish suggestion state (Plan §13.5)
+  publishSuggestion: PublishSuggestionState
+
   // Actions
   initSession: (docType: 'business_rule' | 'user_story') => void
   resumeSession: (documentId: string) => void
@@ -175,6 +195,12 @@ export interface GuidedCreatorState {
   updateStory: (storyId: string, data: Partial<UserStoryData>) => void
   deleteStory: (storyId: string) => void
   addManualStory: () => void
+
+  // Publish suggestion actions (Plan §13.5)
+  showPublishSuggestion: () => void
+  dismissPublishSuggestion: () => void
+  setRemindLater: (remindAt: string) => void
+  setPublished: (url: string) => void
 }
 
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
@@ -209,6 +235,7 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
       lastSessionSummary: null,
       sessionStartedAt: new Date().toISOString(),
       conversion: INITIAL_CONVERSION_STATE,
+      publishSuggestion: INITIAL_PUBLISH_STATE,
 
       // Actions
       initSession: (docType) => {
@@ -227,6 +254,7 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
           isReadyForReview: false,
           sessionStartedAt: new Date().toISOString(),
           conversion: INITIAL_CONVERSION_STATE,
+          publishSuggestion: INITIAL_PUBLISH_STATE,
         })
       },
 
@@ -367,6 +395,7 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
           lastSessionSummary: null,
           sessionStartedAt: new Date().toISOString(),
           conversion: INITIAL_CONVERSION_STATE,
+          publishSuggestion: INITIAL_PUBLISH_STATE,
         })
       },
 
@@ -475,6 +504,49 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
         }))
       },
 
+      // Publish suggestion actions (Plan §13.5)
+      showPublishSuggestion: () => {
+        set((state) => ({
+          publishSuggestion: {
+            ...state.publishSuggestion,
+            showSuggestion: !state.publishSuggestion.dismissed,
+          },
+        }))
+      },
+
+      dismissPublishSuggestion: () => {
+        set({
+          publishSuggestion: {
+            showSuggestion: false,
+            dismissed: true,
+            remindLater: false,
+            remindAt: null,
+            publishedUrl: null,
+          },
+        })
+      },
+
+      setRemindLater: (remindAt) => {
+        set((state) => ({
+          publishSuggestion: {
+            ...state.publishSuggestion,
+            showSuggestion: false,
+            remindLater: true,
+            remindAt,
+          },
+        }))
+      },
+
+      setPublished: (url) => {
+        set((state) => ({
+          publishSuggestion: {
+            ...state.publishSuggestion,
+            showSuggestion: false,
+            publishedUrl: url,
+          },
+        }))
+      },
+
       addManualStory: () => {
         const id = `manual-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
         set((state) => ({
@@ -504,6 +576,7 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
         messages: state.messages,
         overallCompletion: state.overallCompletion,
         conversion: state.conversion,
+        publishSuggestion: state.publishSuggestion,
       }),
     }
   )

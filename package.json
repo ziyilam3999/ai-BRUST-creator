@@ -15,7 +15,11 @@
     "test:e2e:ui": "playwright test --ui",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "sync": "node tools/sync/index.mjs",
+    "sync:init": "node tools/sync/init.mjs",
+    "sync:extract": "node tools/sync/extract-docs.mjs",
+    "test:tools": "vitest run --config vitest.config.tools.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^0.0.50",

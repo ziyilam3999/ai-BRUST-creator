@@ -41,7 +41,31 @@ Captures learnings from every task to make the AI protocol stronger. Learnings a
 ### Active Learnings (Pending Review)
 <!-- New learnings go here -->
 
-### [2026-02-07] INSIGHT: canSaveDraft initial state must match advice engine threshold
+### [2026-02-09] P3 FRICTION: Session context exhaustion during multi-phase protocol implementation
+
+**Priority:** P3 (WARNING)
+**Impact:** WORKFLOW
+**Status:** Applied — see rules/CONTEXT.md
+
+**Context:** Implementing protocol v6.7 changes across 8 files from a detailed implementation plan with 8 phases.
+**Mode:** IMPLEMENT
+**What happened:** The chat session exhausted its token/context budget mid-implementation. The conversation had to be resumed in a new turn, requiring recovery effort to determine what was completed and what remained. All file reads, inline critique analysis, and subagent results accumulated in a single context window.
+**Root cause:** Multiple large file reads in the MAIN thread (GATES.md 480L, EXAMPLES.md 602L, SIMULATION_PLAN.md 2228L) plus inline critique text (~2K tokens) plus subagent result summaries. The combined token load exceeded the context window before all phases could complete.
+**Fix/Improvement:**
+1. **Research in subagent, not main thread:** Large file reads (especially 2000+ line files) should be delegated to subagents that return only the relevant excerpts
+2. **Write critique to tmp file:** Self-critique analysis should be saved to `tmp/` rather than kept inline — prevents ~2K tokens of permanent context bloat
+3. **Checkpoint pattern:** After each phase completion, save a 5-line summary to `tmp/phase-progress.md` so recovery is deterministic
+4. **User's own instruction was correct:** The user said "run each step as a new task... clear context before starting the next task" — this was partially followed (subagents) but main thread still accumulated research context
+5. **Subagent result summaries:** Subagent returns should be compact — don't echo full file contents back, just report what changed and line numbers
+**Verification:** Next multi-phase implementation should complete without context exhaustion. Check: main thread context should stay under 50% capacity after research phase.
+
+**Proposed protocol change:** Add "Multi-Phase Implementation Pattern" to workflow guidance: (Implemented in CONTEXT.md v1.0.0, protocol v7.0.0)
+- Phase 0: Research via subagent → save findings to `tmp/research-{task}.md`
+- Phase N: Implement via subagent → save checkpoint to `tmp/phase-{N}-done.md`
+- Main thread: orchestrate only, never hold large file contents
+- If user says "clear context between steps" → obey literally: use tmp files as handoff mechanism
+
+---
 
 **Priority:** P4 (INFO)
 **Impact:** UX

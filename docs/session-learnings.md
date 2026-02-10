@@ -3537,4 +3537,64 @@ export default async function Home() {
 
 ---
 
-**Last Updated:** 2026-02-03
+## Session: 2026-02-09 (Protocol v6.7 Implementation)
+
+### [2026-02-09] Explanation: Session Context Exhaustion During Multi-Phase Implementation
+
+**Scope:** concept
+**Type:** Concept explanation
+
+#### 📚 EXPLANATION: Session Context Exhaustion
+
+**What it is:** When an AI chat session accumulates too many tokens (from file reads, analysis, tool outputs, and conversation history) and hits the context window limit, forcing the session to terminate mid-task. The agent loses all in-progress state and the user must manually recover.
+
+**Why it matters:** Multi-phase implementation tasks (like protocol v6.7 with 8 phases across 8 files) are particularly vulnerable because each phase requires reading files, making changes, and verifying — all of which generate tokens that persist in the context window. Unlike RAM in a computer, the context window doesn't free memory when a file read is "done."
+
+**How it happened here:**
+
+```
+Phase 0: Research (read 5 large files)          → ~15K tokens consumed
+Phase 0: Inline critique (written in chat)       → ~2K tokens consumed
+Phase 1-3: Subagent calls (return summaries)     → ~3K tokens consumed
+Phase 4-7: Subagent calls (more summaries)       → ~3K tokens consumed
+──────────────────────────────────────────────────────────────
+Total accumulated in main thread:                 → ~23K+ tokens
+Context window limit reached                      → Session terminated
+```
+
+**The core problem:** The main orchestrating thread read large files directly instead of through subagents, and kept the critique analysis inline instead of writing it to a file.
+
+**How to prevent it — the "Thin Orchestrator" pattern:**
+
+```
+┌─────────────────────────────────────────┐
+│           MAIN THREAD (thin)             │
+│  • Orchestrate only                      │
+│  • Never read files > 100 lines          │
+│  • Save findings to tmp/ files           │
+│  • Track progress via todo list          │
+│  • context budget < 50% after research   │
+└──────────┬──────────┬──────────┬────────┘
+           │          │          │
+    ┌──────▼──┐ ┌─────▼────┐ ┌──▼───────┐
+    │Subagent │ │Subagent  │ │Subagent  │
+    │Research │ │Phase 1-3 │ │Phase 4-7 │
+    │→tmp file│ │→tmp file │ │→tmp file │
+    └─────────┘ └──────────┘ └──────────┘
+```
+
+**Key rules:**
+1. **Research via subagent** — the subagent reads 2000-line files, extracts relevant sections, returns a ~200-token summary
+2. **Write analysis to files, not chat** — critique/analysis goes to `tmp/critique.md`, not inline
+3. **Checkpoint after each phase** — `tmp/phase-N-done.md` with 5-line summary enables recovery
+4. **Obey user's context-clearing instructions literally** — "clear context between steps" means use tmp files as handoff mechanism, don't just use subagents while keeping their outputs in main context
+
+🧒 **ELI5:** Imagine you're cooking a 7-course meal, but your kitchen counter (context window) is small. If you keep every ingredient, bowl, and tool on the counter for all 7 courses at once, you run out of space and can't finish. The "Thin Orchestrator" pattern is like having helpers (subagents) who each prepare one course in their own kitchen, then bring you just the finished dish. Your counter stays clean, and you can coordinate all 7 courses without running out of space.
+
+**Related:**
+- `.github/rules/LEARNINGS.md` — learning entry captured
+- `tmp/sim-plan-improvement/006-protocol-v6.7-implementation-plan.md` — the task that triggered this
+
+---
+
+**Last Updated:** 2026-02-09

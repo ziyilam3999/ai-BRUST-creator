@@ -4,6 +4,26 @@
 
 ## Current Session
 
+**Date:** 2026-02-10
+**Phase:** Protocol v7.2.0 Simulation
+**Focus:** Run /simulate for v7.2.0 "Substance Breakout" — validate TDD workflow, substance self-checks, ELI5 quality
+
+### Simulation Results (sim-report-034)
+
+| Metric | v7.1 | v7.2 | Δ |
+|--------|:----:|:----:|:-:|
+| Gate Compliance | 79.7% (L4) | **80.0% (L4)** | +0.3pp |
+| Substance Score | 58.2% | **63.7%** | **+5.5pp** |
+| Context Efficiency | 71.9% | 72.2% | +0.3pp |
+| Substance-Gate Gap | 21.5pp | **16.3pp** | **-5.2pp** |
+| R1-R2 Spread | 0.20pp | 0.38pp | +0.18pp |
+
+**Key findings:** Substance freeze broken after 4 versions. TDD Workflow Template is the largest substance driver (+0.23 TDD Adherence). 5 scenarios promoted to Exceptional cluster. Zero regressions.
+
+---
+
+## Previous Session
+
 **Date:** 2026-02-07
 **Phase:** AI-Guided Document Creation - Pre-Phase 6B Hardening
 **Focus:** Apply 6 targeted fixes from AI-Guided Implementation Review (H3, M1, M5, L1, L2, H1/H2)

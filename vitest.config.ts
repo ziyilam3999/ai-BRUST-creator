@@ -15,6 +15,7 @@ export default defineConfig({
         'node_modules/',
         '__tests__/',
         'e2e/',
+        'tools/',
         '*.config.*',
         '.next/',
         'src/components/ui/**', // shadcn/ui components
@@ -27,7 +28,7 @@ export default defineConfig({
       },
     },
     include: ['__tests__/**/*.{test,spec}.{ts,tsx}'],
-    exclude: ['node_modules', '.next', 'e2e'],
+    exclude: ['node_modules', '.next', 'e2e', 'tools'],
   },
   resolve: {
     alias: {

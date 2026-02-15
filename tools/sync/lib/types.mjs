@@ -3,7 +3,7 @@
  */
 
 /** Shared version constant for all sync scripts */
-export const SCRIPT_VERSION = '2.22.0';
+export const SCRIPT_VERSION = '2.23.0';
 
 /**
  * @typedef {Object} SyncConfig
@@ -40,7 +40,11 @@ export const SCRIPT_VERSION = '2.22.0';
 /**
  * @typedef {Object} SyncItem
  * @property {'file'|'folder'} type
- * @property {string} source - Relative path
+ * @property {string} source - Relative path from repo root
+ * @property {string} [filePattern='*'] - Glob filter for folder items (e.g. '*.md', '*.mjs')
+ * @property {boolean} [recursive=false] - Walk subdirectories for folder items
+ * @property {string} [description] - Logging label override (defaults to source)
+ * @property {boolean} [ensureDir=false] - Create target dir in all repos if missing
  */
 
 /**
@@ -67,6 +71,7 @@ export const SCRIPT_VERSION = '2.22.0';
  * @property {number} syncedCount
  * @property {number} skippedCount
  * @property {number} notFoundCount
+ * @property {boolean} [versionWarning] - True if version regression detected but --force used
  */
 
 /**

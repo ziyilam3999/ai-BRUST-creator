@@ -38,6 +38,7 @@ import {
   getCopilotVersion,
   compareVersions,
 } from './lib/config.mjs';
+import { syncFromConfig } from './lib/config-sync.mjs';
 
 /** @typedef {import('./lib/types.mjs').SyncResult} SyncResult */
 
@@ -327,10 +328,14 @@ function syncAllProjectDocs(results, dryRun = false) {
  * @param {Object} [opts]
  * @param {boolean} [opts.skipTests=false]
  * @param {boolean} [opts.dryRun=false]
+ * @param {boolean} [opts.force=false]
+ * @param {'newest'|'version'|'content-hash'} [opts.strategy='newest']
  */
 export function runSync(opts = {}) {
   const skipTests = opts.skipTests ?? false;
   const dryRun = opts.dryRun ?? false;
+  const force = opts.force ?? false;
+  const strategy = opts.strategy ?? 'newest';
 
   console.log('');
   log.divider(`UNIFIED PERSONAL SYNC v${SCRIPT_VERSION} (JS)`);
@@ -401,117 +406,123 @@ export function runSync(opts = {}) {
   log.info('Using newest-wins strategy: edit from any repo, newest file wins');
   console.log('');
 
-  // 2a. Sync copilot-instructions.md
-  log.info('Syncing copilot-instructions.md...');
-  const copilotResult = syncFileAcrossRepos(
-    `${GITHUB_DIR}/${COPILOT_FILE_NAME}`,
-    targetRepos,
-    'copilot-instructions.md',
-    { dryRun },
-  );
-  results.synced += copilotResult.syncedCount;
-  results.skipped += copilotResult.skippedCount;
+  // Config-driven dispatch (Phase D): use sync_items if available
+  if (config?.sync_items?.length) {
+    log.info('Using config-driven sync dispatch');
+    syncFromConfig(config.sync_items, targetRepos, results, { dryRun, force, strategy });
+  } else {
+    // Fallback: hardcoded sync blocks (legacy)
+    log.warn('No sync_items in config — using hardcoded fallback');
 
-  // 2b. Sync sync script (self-sync — sync the JS tools folder)
-  console.log('');
-  log.info('Syncing tools/sync/...');
-  // Sync the lib/ files
-  const syncLibResult = syncFolderAcrossRepos(
-    'tools/sync/lib',
-    targetRepos,
-    { filePattern: '*.mjs', description: 'tools/sync/lib/', dryRun },
-  );
-  results.scriptsSynced += syncLibResult.syncedCount;
+    // 2a. Sync copilot-instructions.md
+    log.info('Syncing copilot-instructions.md...');
+    const copilotResult = syncFileAcrossRepos(
+      `${GITHUB_DIR}/${COPILOT_FILE_NAME}`,
+      targetRepos,
+      'copilot-instructions.md',
+      { dryRun, force, strategy },
+    );
+    results.synced += copilotResult.syncedCount;
+    results.skipped += copilotResult.skippedCount;
 
-  // Sync the top-level .mjs files
-  const topLevelSyncFiles = ['index.mjs', 'init.mjs', 'extract-docs.mjs'];
-  for (const file of topLevelSyncFiles) {
-    const r = syncFileAcrossRepos(`tools/sync/${file}`, targetRepos, file, { dryRun });
-    results.scriptsSynced += r.syncedCount;
-  }
+    // 2b. Sync sync script (self-sync — sync the JS tools folder)
+    console.log('');
+    log.info('Syncing tools/sync/...');
+    const syncLibResult = syncFolderAcrossRepos(
+      'tools/sync/lib',
+      targetRepos,
+      { filePattern: '*.mjs', description: 'tools/sync/lib/', dryRun },
+    );
+    results.scriptsSynced += syncLibResult.syncedCount;
 
-  // Sync vendor
-  const vendorResult = syncFolderAcrossRepos(
-    'tools/sync/vendor',
-    targetRepos,
-    { filePattern: '*.mjs', description: 'tools/sync/vendor/', dryRun },
-  );
-  results.scriptsSynced += vendorResult.syncedCount;
+    const topLevelSyncFiles = ['index.mjs', 'init.mjs', 'extract-docs.mjs'];
+    for (const file of topLevelSyncFiles) {
+      const r = syncFileAcrossRepos(`tools/sync/${file}`, targetRepos, file, { dryRun });
+      results.scriptsSynced += r.syncedCount;
+    }
 
-  // 2c. Sync legacy PS scripts (for backward compatibility during migration)
-  console.log('');
-  log.info('Syncing legacy PS scripts...');
-  const psScripts = [
-    'tools/sync_copilot_instructions.ps1',
-    'tools/extract_docs.ps1',
-    'tools/init_protocol.ps1',
-  ];
-  for (const ps of psScripts) {
-    const r = syncFileAcrossRepos(ps, targetRepos, path.basename(ps), { dryRun });
-    results.scriptsSynced += r.syncedCount;
-  }
+    const vendorResult = syncFolderAcrossRepos(
+      'tools/sync/vendor',
+      targetRepos,
+      { filePattern: '*.mjs', description: 'tools/sync/vendor/', dryRun },
+    );
+    results.scriptsSynced += vendorResult.syncedCount;
 
-  // 2d. Sync .github/rules/ folder
-  console.log('');
-  log.info('Syncing .github/rules/...');
-  const rulesResult = syncFolderAcrossRepos(
-    GITHUB_RULES_DIR,
-    targetRepos,
-    { filePattern: '*.md', description: '.github/rules/', dryRun },
-  );
-  results.rulesSynced += rulesResult.syncedCount;
+    // 2c. Sync legacy PS scripts
+    console.log('');
+    log.info('Syncing legacy PS scripts...');
+    const psScripts = [
+      'tools/sync_copilot_instructions.ps1',
+      'tools/extract_docs.ps1',
+      'tools/init_protocol.ps1',
+    ];
+    for (const ps of psScripts) {
+      const r = syncFileAcrossRepos(ps, targetRepos, path.basename(ps), { dryRun });
+      results.scriptsSynced += r.syncedCount;
+    }
 
-  // 2e. Sync tools/tests/ folder
-  console.log('');
-  log.info('Syncing tools/tests/...');
-  const testsResult = syncFolderAcrossRepos(
-    TOOLS_TESTS_DIR,
-    targetRepos,
-    { filePattern: '*.ps1', description: 'tools/tests/', dryRun },
-  );
-  results.testsSynced += testsResult.syncedCount;
+    // 2d. Sync .github/rules/ folder
+    console.log('');
+    log.info('Syncing .github/rules/...');
+    const rulesResult = syncFolderAcrossRepos(
+      GITHUB_RULES_DIR,
+      targetRepos,
+      { filePattern: '*.md', description: '.github/rules/', dryRun },
+    );
+    results.rulesSynced += rulesResult.syncedCount;
 
-  // 2f. Sync .claude/commands/
-  console.log('');
-  log.info('Syncing .claude/commands/...');
-  for (const repo of targetRepos) {
-    const commandsDir = path.join(repo, CLAUDE_COMMANDS_DIR);
-    if (!fs.existsSync(commandsDir)) {
-      if (dryRun) {
-        log.info(`  [WhatIf] Would create ${CLAUDE_COMMANDS_DIR} in ${path.basename(repo)}`);
-      } else {
-        fs.mkdirSync(commandsDir, { recursive: true });
+    // 2e. Sync tools/tests/ folder
+    console.log('');
+    log.info('Syncing tools/tests/...');
+    const testsResult = syncFolderAcrossRepos(
+      TOOLS_TESTS_DIR,
+      targetRepos,
+      { filePattern: '*.ps1', description: 'tools/tests/', dryRun },
+    );
+    results.testsSynced += testsResult.syncedCount;
+
+    // 2f. Sync .claude/commands/
+    console.log('');
+    log.info('Syncing .claude/commands/...');
+    for (const repo of targetRepos) {
+      const commandsDir = path.join(repo, CLAUDE_COMMANDS_DIR);
+      if (!fs.existsSync(commandsDir)) {
+        if (dryRun) {
+          log.info(`  [WhatIf] Would create ${CLAUDE_COMMANDS_DIR} in ${path.basename(repo)}`);
+        } else {
+          fs.mkdirSync(commandsDir, { recursive: true });
+        }
       }
     }
-  }
-  const commandsResult = syncFolderAcrossRepos(
-    CLAUDE_COMMANDS_DIR,
-    targetRepos,
-    { filePattern: '*.md', description: '.claude/commands/', dryRun },
-  );
-  results.commandsSynced += commandsResult.syncedCount;
+    const commandsResult = syncFolderAcrossRepos(
+      CLAUDE_COMMANDS_DIR,
+      targetRepos,
+      { filePattern: '*.md', description: '.claude/commands/', dryRun },
+    );
+    results.commandsSynced += commandsResult.syncedCount;
 
-  // 2g. Sync .claude/skills/ (nested — uses recursive mode)
-  console.log('');
-  log.info('Syncing .claude/skills/...');
-  for (const repo of targetRepos) {
-    const skillsDir = path.join(repo, CLAUDE_SKILLS_DIR);
-    if (!fs.existsSync(skillsDir)) {
-      if (dryRun) {
-        log.info(`  [WhatIf] Would create ${CLAUDE_SKILLS_DIR} in ${path.basename(repo)}`);
-      } else {
-        fs.mkdirSync(skillsDir, { recursive: true });
+    // 2g. Sync .claude/skills/ (nested — uses recursive mode)
+    console.log('');
+    log.info('Syncing .claude/skills/...');
+    for (const repo of targetRepos) {
+      const skillsDir = path.join(repo, CLAUDE_SKILLS_DIR);
+      if (!fs.existsSync(skillsDir)) {
+        if (dryRun) {
+          log.info(`  [WhatIf] Would create ${CLAUDE_SKILLS_DIR} in ${path.basename(repo)}`);
+        } else {
+          fs.mkdirSync(skillsDir, { recursive: true });
+        }
       }
     }
-  }
 
-  const skillsResult = syncFolderAcrossRepos(CLAUDE_SKILLS_DIR, targetRepos, {
-    filePattern: '*',
-    description: '.claude/skills/',
-    dryRun,
-    recursive: true,
-  });
-  log.info(`  Skills synced: ${skillsResult.syncedCount} files (${skillsResult.totalFiles} total)`);
+    const skillsResult = syncFolderAcrossRepos(CLAUDE_SKILLS_DIR, targetRepos, {
+      filePattern: '*',
+      description: '.claude/skills/',
+      dryRun,
+      recursive: true,
+    });
+    log.info(`  Skills synced: ${skillsResult.syncedCount} files (${skillsResult.totalFiles} total)`);
+  }
 
   // 2h. Generate CLAUDE.md in all repos
   console.log('');
@@ -590,11 +601,13 @@ const isDirectRun = !process.env.VITEST && !process.env.NODE_TEST;
 
 if (isDirectRun) {
   const args = process.argv.slice(2);
-  const cliOpts = { skipTests: false, dryRun: false };
+  const cliOpts = { skipTests: false, dryRun: false, force: false, strategy: 'newest' };
 
   for (const arg of args) {
     if (arg === '--skip-tests') cliOpts.skipTests = true;
     if (arg === '--dry-run') cliOpts.dryRun = true;
+    if (arg === '--force') cliOpts.force = true;
+    if (arg.startsWith('--strategy=')) cliOpts.strategy = arg.split('=')[1];
   }
 
   try {

@@ -3,14 +3,14 @@
 #   AUTO-GENERATED - DO NOT EDIT DIRECTLY
 # ===========================================================================
 # Source:    .github/copilot-instructions.md
-# Version:   v10.6.0
-# Generated: 2026-02-17 13:06:32
+# Version:   v10.7.0
+# Generated: 2026-02-17 23:10:00
 #
 # To update: Edit .github/copilot-instructions.md, then run:
 #            node tools/sync/index.mjs
 # ===========================================================================
 
-<!-- copilot-instructions v10.6.0 | Last updated: 2026-02-17 -->
+<!-- copilot-instructions v10.7.0 | Last updated: 2026-02-17 -->
 <!-- MODULAR VERSION: Core protocol + pointers to .github/rules/*.md -->
 
 # QUICK START (4 RULES)

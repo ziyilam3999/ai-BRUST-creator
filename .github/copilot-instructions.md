@@ -1,4 +1,4 @@
-<!-- copilot-instructions v10.6.0 | Last updated: 2026-02-17 -->
+<!-- copilot-instructions v10.7.0 | Last updated: 2026-02-17 -->
 <!-- MODULAR VERSION: Core protocol + pointers to .github/rules/*.md -->
 
 # QUICK START (4 RULES)

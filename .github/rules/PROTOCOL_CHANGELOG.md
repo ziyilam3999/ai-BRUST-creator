@@ -7,6 +7,43 @@
 
 ---
 
+## [v10.7.0] - 2026-02-17
+
+### Changed — Phase 6: Gate Push (OPEN + LEARN + CE + THINK)
+
+**Strategic context:** v10.6.0 achieved 82.31% gate, 75.12% substance, 79.14% CE. Phase 6 targets Gate ≥82.40% (floor) by addressing the weakest gates (OPEN ~2.540, LEARN ~2.580) and adding CE deduplication. Multi-round critique pipeline: 2 rounds, 6 BLOCKING + 9 MEDIUM issues found and resolved.
+
+#### GATES.md — OPEN-1: Suffix Enforcement (P0)
+- Added mechanical follow-up detection rule after OPEN Self-Check item 4
+- Detection: scan conversation for prior OPEN line. Present → `follow-up`. Absent → no suffix
+- Hard rule: no `follow-up` + `SHIFT` combination. Cap: 2 suffixes max per OPEN line
+- Impact: OPEN +0.02-0.05 raw → +0.01-0.03pp gate
+
+#### GATES.md — LEARN-1: Field Presence Rule (P0)
+- Added hard-enforced rule: Tier 2 LEARN must contain `Outcome`, `What changed`, `Insight`
+- Missing any of the 3 required fields → LEARN capped at score 2
+- ELI5 additionally required when Learning Mode ON (default). Omitted only in "quick mode"
+- Impact: LEARN +0.02-0.04 raw → +0.01-0.02pp gate
+
+#### GATES.md — CE-1: THINK Deduplication T6+ (P1)
+- Added forward-looking deduplication rule in Session Endurance section
+- From turn 6+, THINK Evidence must not re-derive findings from prior turns
+- Must reference prior turn instead: `Evidence: [per T3 analysis] — [file]:[line] confirmed [finding]`
+- Re-derivation → THINK capped at score 2. New file/line tool calls always permitted
+- Impact: CD +0.05-0.10 raw → CE +0.02-0.04pp
+
+#### GATES.md — THINK-1: Evidence Citation Score 3 Threshold (P1)
+- Extended Evidence precision rule 3: added score 3 eligibility requirement
+- At QCS 4+: ≥2 citations from distinct tool calls required for THINK score 3
+- Fewer than 2 distinct-file citations → THINK capped at score 2
+- Impact: THINK +0.01-0.02 raw → +0.005-0.01pp gate
+
+**Metrics (projected):** Gate 82.34-82.39% | Substance 75.12% | CE 79.16-79.18%
+**Token budget:** +220 tokens (1,290 remaining of 1,950)
+**Validation:** npm test 495/495 passed
+
+---
+
 ## [v10.6.0] - 2026-02-17
 
 ### Changed — Phase 5: CE 80% Push (Behavioral Invariants)

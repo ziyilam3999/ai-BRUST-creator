@@ -2,7 +2,7 @@
 
 > **Version:** v7.4 → v10.x  
 > **Created:** 2026-02-11  
-> **Updated:** 2026-02-17 (v10.6.0: Phase 5 CE push, Substance 75.12% +1.17pp, VQ-1 + CP-1 + CTX-1 + SHIP-1)  
+> **Updated:** 2026-02-17 (v10.7.0: Phase 6 Gate Push, OPEN-1 + LEARN-1 + CE-1 + THINK-1, Gate ~82.34-82.39%)  
 > **Baseline:** Protocol v10.3.0 (= v10.1.0 effective) — 18 rule files, GATES.md ~846 lines  
 > **v10.6 Scores (sim-121, projected):** 82.31% gate | 75.12% substance | 79.14% CE | behavioral invariants  
 > **v10.5 Scores (sim-120, projected):** 82.25% gate | 73.95% substance | 79.04% CE | conditional loading  
@@ -964,14 +964,14 @@ Phase 3B (v8.2–v8.4) ──✅
 PARTIALLY COMPLETE                        ─────────────────────────────────────────
 ────────────────────                      Plateau (81.87%→81.88%→81.87%) → decision gate triggered
 Phase 1B (structural) ──🔶 Low priority
-Phase 2  (P16 only) ──🔶 Decision @ v9.0  ARCHITECTURAL PIVOT (🔄 IN PROGRESS)
+Phase 2  (P16 only) ──🔶 Decision @ v9.0  ARCHITECTURAL PIVOT (✅ PHASES 4A-5 DONE)
 Phase 3  (W2-c, bootstrap) ──🔶 Medium    ─────────────────────────────────────────
 Phase 3C (QCS measurement) ──❌ Low       WS1 (SHIP) + WS3 (TDD) → Phase 4A (Protocol Lite)
-                                          → Phase 4B → Phase 4C → Phase 5
+                                          → Phase 4B → Phase 5 (VQ-1/CP-1) → Phase 6 (Gate push)
 ```
 
-**Sessions consumed:** ~21 (Phases 0–3B + emergent v7.5–v10.3 + L4 cycle)  
-**Sessions remaining:** 6 planned (Phase 4A execution) + 4-6 for remaining architectural phases
+**Sessions consumed:** ~23 (Phases 0–3B + emergent v7.5–v10.3 + L4 cycle + Phases 4A-5)
+**Sessions remaining:** 4-6 for remaining phases (Phase 6 gate push + Phase 7 CE + Phase 4C YAML)
 
 ---
 

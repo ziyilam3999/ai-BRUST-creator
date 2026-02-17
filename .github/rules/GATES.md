@@ -160,6 +160,9 @@ Before writing the OPEN line, perform this 4-point check:
 4. **Suffix:** First response → no suffix. Follow-up (same task) → `| follow-up`.
    Mode shift → `| SHIFT from [MODE]`. Turn 8+ → `| T[N]`. Turn 10+ → `| session:long`.
 
+**Suffix Enforcement (hard rule):**
+A response is `follow-up` when the conversation contains ≥1 prior assistant message addressing the same task. Detection is mechanical: scan conversation for a prior OPEN line. Present → append `| follow-up`. Absent → no suffix. Do not use `follow-up` and `SHIFT` in the same OPEN line — if task changes, it is a SHIFT, not a follow-up. Cap: a single OPEN line has at most 2 suffixes (e.g., `| follow-up | T8`).
+
 If any check fails, fix before outputting OPEN.
 
 ### Common OPEN Errors (self-check prevents these)
@@ -286,6 +289,7 @@ Example: `Edge cases: null user object, empty permissions array, concurrent sess
 2. Format: `[file]:[line] — [specific finding]` (not "I checked file.ts" or "the file has relevant code")
 3. Minimum evidence items: QCS 2-3 = 1 citation, QCS 4+ = 2 citations
 4. If fewer tool calls than minimum were made, cite what exists honestly. Do not fabricate additional citations to meet the minimum.
+5. Score 3 eligibility at QCS 4+: THINK Evidence must include ≥2 citations in `[file]:[line] — [finding]` format, where each citation corresponds to a distinct tool call in this response. Fewer than 2 distinct-file citations → THINK capped at score 2.
 6. If no tool calls were made: Evidence = "No tool calls — approach based on user description"
 
 **Self-Check (Before Writing THINK Block):**
@@ -762,6 +766,10 @@ Compliance:
 - Friction: [protocol friction, or None]
 ```
 
+**LEARN Field Presence Rule (hard-enforced):**
+Every Tier 2 LEARN block MUST contain these 3 fields: `Outcome`, `What changed`, `Insight`. Missing any → LEARN capped at score 2.
+`ELI5` is additionally required when Learning Mode is ON (default). Omit ELI5 only when user has set "quick mode."
+
 **Per-gate table self-check (before writing the compliance table):**
 1. Scan your response for these blocks: OPEN, THINK, GO, TEST, SHIP
 2. For each block found → mark ✅ in table with specific note (quote a keyword from the block)
@@ -816,6 +824,11 @@ Non-trivial Insight/Friction → auto-append to `tmp/learn-persist.md`: `[YYYY-M
 ## Session Endurance
 
 Gate blocks may degrade in long sessions. If you notice abbreviation, output one full-format response to reset.
+
+**THINK Deduplication (T6+ responses):**
+From turn 6 onward, THINK Evidence MUST NOT re-derive findings already established in prior turns of this conversation. Instead, reference the prior turn: `Evidence: [per T3 analysis] — [file]:[line] confirmed [finding]`.
+Re-deriving a previously-established finding (repeating the same `read_file` + analysis from an earlier turn) → THINK capped at score 2 for that response.
+This rule applies only to findings; new tool calls for NEW files or lines are always permitted.
 
 **Turn 8+ rule:** At turn 8+, append `| T[N]` to OPEN to make turn count visible. At turn 10+, escalate to `| session:long`. In LEARN at T10+, MUST include `Gates: [N]/[N]` count (even in Compact format) as a mechanical degradation check.
 

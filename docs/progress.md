@@ -5,8 +5,8 @@
 ## Current Session
 
 **Date:** 2026-02-17
-**Phase:** Phase 5 CE Push — Complete ✅ | v10.6.0 SHIPPED ✅
-**Focus:** Phase 5 behavioral invariants for VQ, Checkpoint Discipline, Tool Selection
+**Phase:** Phase 6 Gate Push — Complete ✅ | v10.7.0 SHIPPED ✅
+**Focus:** Phase 6 gate push (OPEN-1, LEARN-1, CE-1, THINK-1)
 
 ### Completed This Session
 
@@ -109,6 +109,24 @@
 - **Phase 6 Planning:** Gate ≥82.5% push (dedicated gate discriminators for TEST/SHIP)
 - **CE 80% stretch:** Needs architectural context management changes beyond behavioral invariants
 - **Optional:** Full 49-scenario simulation to validate v10.6.0 projection
+
+### Phase 6 — Gate Push (v10.7.0)
+
+15. **Phase 6 — Gate Push (v10.7.0):**
+    - **OPEN-1:** Suffix Enforcement Rule (GATES.md) — mechanical follow-up detection: scan for prior OPEN line. Present → `follow-up`. Cap: 2 suffixes max per OPEN line. No `follow-up` + `SHIFT` combination.
+    - **LEARN-1:** Field Presence Rule (GATES.md) — Tier 2 LEARN must contain `Outcome`, `What changed`, `Insight`. Missing any → LEARN capped at score 2. ELI5 required when Learning Mode ON.
+    - **CE-1:** THINK Deduplication T6+ (GATES.md) — from turn 6+, THINK Evidence must not re-derive prior-turn findings. Reference prior turn instead. Re-derivation → THINK capped at score 2.
+    - **THINK-1:** Evidence Citation Score 3 Threshold (GATES.md) — at QCS 4+, ≥2 distinct-file citations required for THINK score 3. Fewer → capped at score 2.
+    - Multi-round critique pipeline: 2 rounds, 4 BLOCKING + 5 MEDIUM (C1), 2 BLOCKING + 4 MEDIUM (C2) — all resolved.
+    - Step 0 per-gate validation: OPEN weakest (~2.540), LEARN second (~2.580). TEST/SHIP improved post-Phase 5.
+    - Token addition: ~220 tokens (1,290 remaining of 1,950 budget).
+    - npm test: 495/495 passed.
+
+| Metric | v10.6.0 sim-121 | v10.7.0 (projected) |
+|--------|:---------------:|:-------------------:|
+| Gate | 82.31% | **82.34–82.39%** (+0.03–0.08pp) |
+| Substance | 75.12% | **75.12%** (maintained) |
+| CE | 79.14% | **79.16–79.18%** (+0.02–0.04pp) |
 
 ---
 

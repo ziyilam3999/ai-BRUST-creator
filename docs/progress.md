@@ -5,8 +5,8 @@
 ## Current Session
 
 **Date:** 2026-02-17
-**Phase:** Phase 4B Conditional Loading — Complete ✅ | v10.5.0 SHIPPED ✅
-**Focus:** Phase 4B conditional tech stack loading + context optimization
+**Phase:** Phase 5 CE Push — Complete ✅ | v10.6.0 SHIPPED ✅
+**Focus:** Phase 5 behavioral invariants for VQ, Checkpoint Discipline, Tool Selection
 
 ### Completed This Session
 
@@ -85,10 +85,30 @@
 | TDD Modal | 3.0 | **3.0** (maintained) |
 | QCS 4+ Tokens | ~19,600 | **~14,800** (-25%) |
 
+14. **Phase 5 — CE 80% Push (v10.6.0):**
+    - **VQ-1:** Verification Read Rule (GATES.md) — obligation to read_file/grep_search on modified files before writing Verified line. TEST Verified capped at score 2 without post-implementation read.
+    - **CP-1:** Checkpoint Discipline Rule (MODES.md) — at session turn T4+, write checkpoint before next implementation action if ≥2 remaining steps. CE Checkpoint Discipline capped at 2 on violation.
+    - **CTX-1:** Tool Selection Quick Reference (MODES.md) — 4-row tool selection table for QCS 2-3 tier (where CONTEXT.md is not loaded). Back-reference to full framework.
+    - **SHIP-1:** Claims Precision Common Error (GATES.md) — verb-count mismatch row in Common SHIP Errors table.
+    - Multi-round critique pipeline: 2 critique rounds, 3 BLOCKING + 5 MEDIUM (C1), 1 BLOCKING + 5 MEDIUM (C2) — all resolved.
+    - Step 0 prerequisite validation: CE dimensions both ~2.0/3 (CD and TS equally weak). VQ failure mode: "no re-read" universal (4/4 scenarios).
+    - sim-121 (conservative projection): Gate 82.31%, Substance 75.12%, CE 79.14%.
+    - Shipped as v10.6.0.
+
+### Key Metrics
+
+| Metric | v10.5.0 sim-120 | v10.6.0 sim-121 (projected) |
+|--------|:---------------:|:---------------------------:|
+| Gate | 82.25% | **82.31%** (+0.06pp) |
+| Substance | 73.95% | **75.12%** (+1.17pp) |
+| CE | 79.04% | **79.14%** (+0.10pp) |
+| VQ | ~1.98 | **~2.33** (+0.35) |
+
 ### Next Steps
 
-- **Phase 5 Planning:** CE 80% push — multi-turn context pruning, subagent output routing
-- **Optional:** Full 49-scenario simulation to validate v10.5.0 projection (low priority, projection sufficient for context-only changes)
+- **Phase 6 Planning:** Gate ≥82.5% push (dedicated gate discriminators for TEST/SHIP)
+- **CE 80% stretch:** Needs architectural context management changes beyond behavioral invariants
+- **Optional:** Full 49-scenario simulation to validate v10.6.0 projection
 
 ---
 

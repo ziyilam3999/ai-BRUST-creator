@@ -4,6 +4,96 @@
 
 ## Current Session
 
+**Date:** 2026-02-17
+**Phase:** Phase 4B Conditional Loading — Complete ✅ | v10.5.0 SHIPPED ✅
+**Focus:** Phase 4B conditional tech stack loading + context optimization
+
+### Completed This Session
+
+1. **v10.2 Simulation (sim-114):** Full 6-phase `/simulate` run. Result: 81.87% gate (−0.03pp regression). Strategic verdict: regression cycle.
+2. **Strategic Assessment:** Analyzed 3-version plateau (v10.0–v10.2), identified three options. Recommended Option A (revert + close cycle + pivot).
+3. **v10.3.0 Release:** Full revert of v10.2 changes across 7 files. Restores v10.1 effective state (81.88% gate).
+4. **D-011 Decision:** Close L4 incremental cycle. Decision gate triggered (2 consecutive versions <0.03pp).
+5. **Strategic Pivot Plan (D-012):** 6-step plan development. Produced 6-session execution plan with 3 workstreams.
+6. **Session 1 — Root-Cause Analysis (WS1 + WS3):**
+   - SHIP: Two-band structure identified. Traced field is primary 2→3 blocker. Structural plateau (not protocol-fixable via calibration). 4 proposals (SP-1 to SP-4).
+   - TDD: RED CHECK terminal evidence is primary bottleneck (modal score 2.0). 4 proposals (TP-1 to TP-4), queued for post-4A.
+7. **Session 2 — Protocol Lite Design:**
+   - Spec: 74 lines, ~400 tokens (under 75-line / 500-token limits)
+   - 3-tier loading strategy: QCS 0-1 (~500 tok) → QCS 2-3 (~4K tok) → QCS 4+ (~21K tok)
+   - Informed by Session 1: SHIP 3-field (no Traced at QCS 0-1), GO micro-format, LEARN compact
+8. **Session 3 — Protocol Lite Implementation:**
+   - Created `.github/rules/PROTOCOL_LITE.md` (74 lines)
+   - Updated copilot-instructions.md: v10.3.0 → v10.4.0 (Step 3 tiered loading, Reference Index)
+   - Synced CLAUDE.md to v10.4.0
+   - Local coherence test passed (3 scenarios: QCS 0, QCS 2, QCS 4)
+9. **Session 4 — sim-045a (QCS 0-1 Validation):**
+   - Result: **99.4% gate** (7 scenarios: SIM-01, -03, -05, -09, -30, -31, -38)
+   - Protocol Lite standalone confirmed: 0 escalations, all micro-tasks detected correctly
+   - QCS boundary validated: THINK correctly NOT fired at QCS 1 (SIM-31)
+   - Token efficiency: ~95% protocol load reduction vs. full protocol
+   - Decision gate: **PASS** (99.4% >> 76% floor) → proceed to sim-045b
+10. **Session 5 — sim-045b (Full Tiered Loading):**
+    - Result: **82.1% gate** (+0.22pp), **78.64% CE** (+1.12pp), **71.50% substance** (+0.05pp)
+    - Tiered loading validated across all 49 scenarios
+    - QCS 0-1 (7): 99.4% gate using Protocol Lite only (~400 tokens)
+    - QCS 2-3 (18): 80.2% gate using Lite + GATES + MODES (~4K tokens)
+    - QCS 4-6 (24): 81.5% gate using full protocol (~21K tokens)
+    - Protocol load savings: 381,575 tokens total (38% reduction)
+    - Decision gate: **PASS** (both floors exceeded) → ship Phase 4A
+11. **Session 6 — Post-4A Consolidation (v10.4.1):**
+    - **NEW-3 (SIMULATION_PLAN.md v6.2.0):** Added §4.6 QCS-Tier Scoring, per-tier calibration anchors, per-tier report breakdown template, updated calibration anchor section
+    - **TP-1 (First-Command Rule strengthened):** Changed from "FIRST `run_in_terminal` call" to "FIRST tool call must be `run_in_terminal`" — closes the loophole where agents call `edit_file` before any testing. TEST gate capped at 2 on violation.
+    - **TP-2 (RED CHECK auto-annotation):** Added self-check item 3c: `TDD: MISSED-RED` auto-annotation when pre-implementation terminal lacks FAIL evidence. Makes RED CHECK gap visible.
+    - **SP-1 (Traced binary test):** Added explicit score 2→3 discriminator for Traced line: N/N=100% + step-to-claim mapping required for score 3.
+    - **TP-4 (Per-scenario TDD tracking):** Added diagnostic tracking table template to substance section for per-scenario visibility.
+    - **Evaluated & skipped:** TP-3 (already covered by existing semantic matching), SP-4 (already covered by SHIP self-check item 1), SP-2/SP-3 (low priority, structural ceiling)
+    - Protocol version: v10.4.0 → v10.4.1
+12. **Simulation v10.4.1 (sim-117 + sim-118):**
+    - **sim-117 (12-scenario subset):** 99.7% gate, 96.0% substance. TP-1 validated: 9/9 IMPLEMENT scenarios achieved TDD 3.0 (modal shift from 2.0). SP-1 validated: 6/6 SHIP scenarios N/N=100% Traced.
+    - **sim-118 (consolidated projection to 49 scenarios):** Gate 82.25% (+0.15pp), Substance 73.95% (+2.45pp), CE 78.64% (stable). All decision gates pass.
+    - **TP-1 impact: +2.45pp substance** — 2nd-largest single-version gain in protocol history (12-24× Session 1 projection of +0.10-0.20pp).
+    - **Strategic verdict:** SHIP v10.4.1 as production protocol ✅
+
+### Key Metrics
+
+| Metric | v10.4 sim-045b | v10.4.1 sim-117 (subset) | v10.4.1 sim-118 (projected) |
+|--------|:--------------:|:------------------------:|:---------------------------:|
+| Gate | 82.10% | 99.7% | **82.25%** (+0.15pp) |
+| Substance | 71.50% | 96.0% | **73.95%** (+2.45pp) |
+| CE | 78.64% | N/A | **78.64%** (stable) |
+| TDD Modal | 2.0 | **3.0** | **~2.85** |
+
+13. **Phase 4B — Conditional Tech Stack Loading (v10.5.0):**
+    - PROTOCOL_CHANGELOG.md → lazy-load (22% QCS 4+ token reduction)
+    - Conditional COMMANDS loading (COMMANDS.node/flutter/python per PROJECT_DETECTION.md)
+    - STYLES.md split → universal (STYLES.md v2.0.0) + conditional (STYLES.react.md v1.0.0)
+    - QCS 4+ instruction fix: "respecting conditional and lazy-load annotations"
+    - PROJECT_DETECTION.md v2.0.0 (Python row, exclusion column)
+    - 11 legacy files archived to .github/rules/archive/
+    - CLAUDE.md synced across 7 repos, cross-repo verification 7/7 PASS
+    - sim-119/120 (conservative projection): Gate 82.25%, Substance 73.95%, CE 79.04% (+0.40pp)
+    - All decision gates met. Shipped as v10.5.0.
+
+### Key Metrics
+
+| Metric | v10.4.1 sim-118 | v10.5.0 sim-120 (projected) |
+|--------|:---------------:|:---------------------------:|
+| Gate | 82.25% | **82.25%** (maintained) |
+| Substance | 73.95% | **73.95%** (maintained) |
+| CE | 78.64% | **79.04%** (+0.40pp) |
+| TDD Modal | 3.0 | **3.0** (maintained) |
+| QCS 4+ Tokens | ~19,600 | **~14,800** (-25%) |
+
+### Next Steps
+
+- **Phase 5 Planning:** CE 80% push — multi-turn context pruning, subagent output routing
+- **Optional:** Full 49-scenario simulation to validate v10.5.0 projection (low priority, projection sufficient for context-only changes)
+
+---
+
+## Previous Session
+
 **Date:** 2026-02-10
 **Phase:** Protocol v7.2.0 Simulation
 **Focus:** Run /simulate for v7.2.0 "Substance Breakout" — validate TDD workflow, substance self-checks, ELI5 quality

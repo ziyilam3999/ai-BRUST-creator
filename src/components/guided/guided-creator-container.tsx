@@ -30,6 +30,8 @@ export function GuidedCreatorContainer({ documentType, onClose, onSave }: Props)
     canSaveDraft,
     publishSuggestion,
     showPublishSuggestion,
+    undoLastChange,
+    redoLastChange,
   } = useGuidedCreatorStore()
   const { saveDraft } = useGuidedChat()
   const [isSaving, setIsSaving] = useState(false)
@@ -61,6 +63,23 @@ export function GuidedCreatorContainer({ documentType, onClose, onSave }: Props)
     return () => stopAutoSave()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // D1: Global keyboard shortcuts for undo (Ctrl+Z / Meta+Z) and redo (Ctrl+Y / Meta+Shift+Z)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const ctrl = e.ctrlKey || e.metaKey
+      if (!ctrl) return
+      if (e.key === 'z' && !e.shiftKey) {
+        e.preventDefault()
+        undoLastChange()
+      } else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) {
+        e.preventDefault()
+        redoLastChange()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [undoLastChange, redoLastChange])
 
   useEffect(() => {
     initSession(documentType)

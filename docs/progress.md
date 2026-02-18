@@ -429,7 +429,7 @@ TDD polish, undo/redo wiring, ARIA accessibility, and edge-case coverage.
 | C4 | ARIA audit | `aria-live="polite"` on message list, `role="region"` on SectionCard, skip nav links | [x] |
 | C5 | Tests for C3 + C4 | 12 parseConditions edge-case tests + 4 ARIA tests, all green | [x] |
 
-**Group C commit:** pending — 575 tests passing (43 test files)
+**Group C commit:** `6b5d33b` — 575 tests passing (43 test files)
 
 **Phase 6B Files (Planned):**
 | File | Purpose |

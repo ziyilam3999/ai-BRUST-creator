@@ -4,7 +4,7 @@
 # ===========================================================================
 # Source:    .github/copilot-instructions.md
 # Version:   v10.11.0
-# Generated: 2026-02-18 09:21:08
+# Generated: 2026-02-18 12:17:25
 #
 # To update: Edit .github/copilot-instructions.md, then run:
 #            node tools/sync/index.mjs

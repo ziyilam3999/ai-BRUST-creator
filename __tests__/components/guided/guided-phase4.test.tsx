@@ -65,6 +65,8 @@ const mockStoreState = {
   lastAiError: null,
   setAiError: vi.fn(),
   clearAiError: vi.fn(),
+  canUndo: false,
+  canRedo: false,
 }
 
 vi.mock('@/stores/guided-creator-store', () => ({

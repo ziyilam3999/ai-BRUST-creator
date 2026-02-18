@@ -57,6 +57,8 @@ const mockStoreState = {
   lastAiError: null,
   setAiError: vi.fn(),
   clearAiError: vi.fn(),
+  canUndo: false,
+  canRedo: false,
 }
 
 vi.mock('@/stores/guided-creator-store', () => ({
@@ -127,6 +129,30 @@ describe('Guided UI Components', () => {
       render(<GuidedCreatorContainer documentType="business_rule" />)
 
       expect(mockStoreState.initSession).toHaveBeenCalledWith('business_rule')
+    })
+
+    it('Ctrl+Z triggers undoLastChange', async () => {
+      const { GuidedCreatorContainer } = await import('@/components/guided/guided-creator-container')
+      render(<GuidedCreatorContainer documentType="business_rule" />)
+
+      fireEvent.keyDown(window, { key: 'z', ctrlKey: true })
+      expect(mockStoreState.undoLastChange).toHaveBeenCalledTimes(1)
+    })
+
+    it('Ctrl+Y triggers redoLastChange', async () => {
+      const { GuidedCreatorContainer } = await import('@/components/guided/guided-creator-container')
+      render(<GuidedCreatorContainer documentType="business_rule" />)
+
+      fireEvent.keyDown(window, { key: 'y', ctrlKey: true })
+      expect(mockStoreState.redoLastChange).toHaveBeenCalledTimes(1)
+    })
+
+    it('Meta+Z triggers undoLastChange (macOS)', async () => {
+      const { GuidedCreatorContainer } = await import('@/components/guided/guided-creator-container')
+      render(<GuidedCreatorContainer documentType="business_rule" />)
+
+      fireEvent.keyDown(window, { key: 'z', metaKey: true })
+      expect(mockStoreState.undoLastChange).toHaveBeenCalledTimes(1)
     })
   })
 

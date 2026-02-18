@@ -170,6 +170,10 @@ export interface GuidedCreatorState {
   // AI stream error state (Plan §B5)
   lastAiError: string | null
 
+  // Undo/redo availability flags (D1 — reactive state, not methods)
+  canUndo: boolean
+  canRedo: boolean
+
   // Actions
   initSession: (docType: 'business_rule' | 'user_story') => void
   resumeSession: (documentId: string) => void
@@ -253,6 +257,8 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
       conversion: INITIAL_CONVERSION_STATE,
       publishSuggestion: INITIAL_PUBLISH_STATE,
       lastAiError: null,
+      canUndo: false,
+      canRedo: false,
 
       // Actions
       initSession: (docType) => {
@@ -273,6 +279,8 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
           sessionStartedAt: new Date().toISOString(),
           conversion: INITIAL_CONVERSION_STATE,
           publishSuggestion: INITIAL_PUBLISH_STATE,
+          canUndo: false,
+          canRedo: false,
         })
       },
 
@@ -304,7 +312,7 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
             },
           }
           _undoMgr.push(before, after)
-          return { sections: after }
+          return { sections: after, canUndo: _undoMgr.canUndo(), canRedo: _undoMgr.canRedo() }
         })
       },
 
@@ -333,12 +341,12 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
 
       undoLastChange: () => {
         const prev = _undoMgr.undo()
-        if (prev) set({ sections: prev })
+        if (prev) set({ sections: prev, canUndo: _undoMgr.canUndo(), canRedo: _undoMgr.canRedo() })
       },
 
       redoLastChange: () => {
         const next = _undoMgr.redo()
-        if (next) set({ sections: next })
+        if (next) set({ sections: next, canUndo: _undoMgr.canUndo(), canRedo: _undoMgr.canRedo() })
       },
 
       editSection: (section) => {
@@ -429,6 +437,8 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
           conversion: INITIAL_CONVERSION_STATE,
           publishSuggestion: INITIAL_PUBLISH_STATE,
           lastAiError: null,
+          canUndo: false,
+          canRedo: false,
         })
       },
 

@@ -1,14 +1,18 @@
 import { test, expect } from '@playwright/test'
+import { useApiMocks } from '../fixtures/api-mocks'
 
 /**
  * E2E test for BR-to-US conversion flow.
  * Tests the full flow: view completed BR → trigger conversion → review analysis →
  * generate stories → review/edit stories → save all.
  *
- * Note: Requires a running app with a completed BR document in the database.
- * In CI, seed data should be provided via fixtures.
+ * All API calls are mocked via useApiMocks — no running DB or seeded data required.
  */
 test.describe('BR-to-US Conversion Flow', () => {
+  test.beforeEach(async ({ page }) => {
+    await useApiMocks(page)
+  })
+
   test('should show conversion prompt on completed BR detail page', async ({ page }) => {
     // Navigate to a completed BR (assumes seeded data)
     await page.goto('/business-rule/test-br-id')

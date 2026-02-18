@@ -1,3 +1,4 @@
+// NOTE: No RED phase recorded — post-hoc test (written after D1 implementation). Behavior validity unverified.
 /**
  * guided-creator-undo-ui.test.ts
  * D1: Tests for canUndo/canRedo reactive state fields in the store.

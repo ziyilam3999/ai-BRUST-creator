@@ -1,3 +1,4 @@
+// NOTE: No RED phase recorded — post-hoc test (written after D3 implementation). Behavior validity unverified.
 /**
  * auto-save-server.test.ts
  * D3: Tests for syncToServer() and checkForUnsavedDraftFromServer().

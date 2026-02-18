@@ -1,3 +1,4 @@
+// NOTE: No RED phase recorded — post-hoc test (written after D1 implementation). Behavior validity unverified.
 /**
  * document-panel.test.tsx
  * D1: Tests for DocumentPanel undo/redo toolbar — button disabled states.

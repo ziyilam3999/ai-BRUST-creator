@@ -49,6 +49,7 @@ const mockStoreState = {
   updateSection: vi.fn(),
   acceptDraft: mockAcceptDraft,
   undoLastChange: vi.fn(),
+  redoLastChange: vi.fn(),
   editSection: mockEditSection,
   navigateToSection: mockNavigateToSection,
   calculateCompletion: vi.fn(),

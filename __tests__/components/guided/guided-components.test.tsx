@@ -41,6 +41,7 @@ const mockStoreState = {
   updateSection: vi.fn(),
   acceptDraft: vi.fn(),
   undoLastChange: vi.fn(),
+  redoLastChange: vi.fn(),
   editSection: vi.fn(),
   navigateToSection: vi.fn(),
   calculateCompletion: vi.fn(),
@@ -354,8 +355,8 @@ describe('Guided UI Components', () => {
       )
 
       expect(screen.getByText('Description')).toBeInTheDocument()
-      // No content area should be visible
-      expect(screen.queryByRole('region')).not.toBeInTheDocument()
+      // No editable input/textarea should be visible for not_started sections
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
     })
 
     it('should show edit button when not blocked', async () => {

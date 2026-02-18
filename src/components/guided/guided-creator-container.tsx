@@ -83,6 +83,19 @@ export function GuidedCreatorContainer({ documentType, onClose, onSave }: Props)
 
   return (
     <div className="flex flex-col h-full">
+      {/* C4: Skip navigation links for keyboard users */}
+      <a
+        href="#conversation-panel"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-background focus:text-foreground focus:underline"
+      >
+        Skip to conversation
+      </a>
+      <a
+        href="#document-panel"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-background focus:text-foreground focus:underline focus:top-8"
+      >
+        Skip to document
+      </a>
       <header className="flex items-center justify-between border-b px-4 py-3">
         <div className="flex items-center gap-3">
           <h1 className="text-lg font-semibold">
@@ -128,12 +141,12 @@ export function GuidedCreatorContainer({ documentType, onClose, onSave }: Props)
       </header>
 
       <div className="flex-1 flex flex-col lg:flex-row min-h-0">
-        <div className="w-full lg:w-1/2 border-b lg:border-b-0 lg:border-r">
+        <div id="conversation-panel" className="w-full lg:w-1/2 border-b lg:border-b-0 lg:border-r">
           <GuidedErrorBoundary panelName="Conversation Panel">
             <ConversationPanel />
           </GuidedErrorBoundary>
         </div>
-        <div className="w-full lg:w-1/2">
+        <div id="document-panel" className="w-full lg:w-1/2">
           <GuidedErrorBoundary panelName="Document Panel">
             <DocumentPanel />
           </GuidedErrorBoundary>

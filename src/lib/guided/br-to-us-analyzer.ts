@@ -90,15 +90,63 @@ export function parseConditions(ifStatement: string): string[] {
     return []
   }
 
-  // Split on AND, OR, &&, || (case insensitive for AND/OR)
-  const separatorPattern = /\s+(?:AND|OR|\&\&|\|\|)\s+/gi
+  // C3(a): Parenthetical-aware split — only split on AND/OR/&&/|| that are
+  // at nesting depth 0 (i.e. not inside parentheses).
+  const tokens = _splitTopLevel(ifStatement.trim())
+  return tokens.length > 0 ? tokens : [ifStatement.trim()]
+}
 
-  const conditions = ifStatement
-    .split(separatorPattern)
-    .map(c => c.trim())
-    .filter(c => c.length > 0)
+/**
+ * Split `input` on AND / OR / && / || only when at parenthesis-nesting depth 0.
+ * C3(a): preserves parenthetical groups like "(A AND B)" as single tokens.
+ * C3(b): NOT/UNLESS prefixes are retained as part of their following token.
+ * C3(c): Numeric comparators (<, >, <=, >=, !=, ≠) are never treated as separators.
+ */
+function _splitTopLevel(input: string): string[] {
+  const results: string[] = []
+  let depth = 0
+  let current = ''
+  let i = 0
 
-  return conditions.length > 0 ? conditions : [ifStatement.trim()]
+  while (i < input.length) {
+    const ch = input[i]
+
+    if (ch === '(') {
+      depth++
+      current += ch
+      i++
+      continue
+    }
+
+    if (ch === ')') {
+      depth--
+      current += ch
+      i++
+      continue
+    }
+
+    // Only attempt to split when not inside parentheses
+    if (depth === 0) {
+      // Match AND / OR / && / || as a separator (word-boundary aware)
+      const rest = input.slice(i)
+      const sepMatch = rest.match(/^(\s+(?:AND|OR|&&|\|\|)\s+)/i)
+      if (sepMatch) {
+        const trimmed = current.trim()
+        if (trimmed) results.push(trimmed)
+        current = ''
+        i += sepMatch[0].length
+        continue
+      }
+    }
+
+    current += ch
+    i++
+  }
+
+  const last = current.trim()
+  if (last) results.push(last)
+
+  return results
 }
 
 /**

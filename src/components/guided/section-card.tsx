@@ -117,6 +117,8 @@ export function SectionCard({ section, state, isActive }: Props) {
 
   return (
     <Card
+      role="region"
+      aria-label={SECTION_LABELS[section] || section}
       className={cn(
         'transition-all',
         isActive && 'ring-2 ring-primary',

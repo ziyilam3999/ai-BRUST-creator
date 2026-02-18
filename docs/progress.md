@@ -403,18 +403,33 @@ After document completion, AI proactively suggests publishing to Confluence/JIRA
 
 | # | Task | Est. Hours | Dependencies | Status |
 |---|------|------------|--------------|--------|
-| 6B.1 | Create `atlassian-connection.ts` (connection state checker) | 2 | Existing OAuth (Phase 3.2) | [ ] |
-| 6B.2 | Create `publish-suggestion-card.tsx` (AI suggestion in chat) | 3 | 6B.1, Guided Store | [ ] |
-| 6B.3 | Create `connection-prompt.tsx` ("Connect Atlassian" prompt) | 2 | Existing OAuth flow | [ ] |
-| 6B.4 | Create `publish-preview-confluence.tsx` (Confluence page preview) | 3 | Existing Confluence API | [ ] |
-| 6B.5 | Create `publish-preview-jira.tsx` (JIRA issue preview) | 3 | Existing JIRA API | [ ] |
-| 6B.6 | Create `publish-success-message.tsx` (success with link) | 1 | — | [ ] |
-| 6B.7 | Update guided-creator-store with PublishSuggestionState | 2 | 6B.1-6B.6 | [ ] |
-| 6B.8 | Integration with completion triggers (≥80% threshold) | 2 | 6B.7 | [ ] |
-| 6B.9 | Integration with BR-to-US flow (suggest after conversion) | 2 | 6B.8, Phase 5 | [ ] |
-| 6B.10 | Add publish suggestion AI prompts to guided-prompts.ts | 1 | 6B.2 | [ ] |
-| 6B.11 | Unit tests (connection state, store, components) | 2 | 6B.1-6B.10 | [ ] |
-| 6B.12 | Integration tests (trigger flow, publish flow, error handling) | 3 | 6B.1-6B.10 | [ ] |
+| 6B.1 | Create `atlassian-connection.ts` (connection state checker) | 2 | Existing OAuth (Phase 3.2) | [x] |
+| 6B.2 | Create `publish-suggestion-card.tsx` (AI suggestion in chat) | 3 | 6B.1, Guided Store | [x] |
+| 6B.3 | Create `connection-prompt.tsx` ("Connect Atlassian" prompt) | 2 | Existing OAuth flow | [x] |
+| 6B.4 | Create `publish-preview-confluence.tsx` (Confluence page preview) | 3 | Existing Confluence API | [x] |
+| 6B.5 | Create `publish-preview-jira.tsx` (JIRA issue preview) | 3 | Existing JIRA API | [x] |
+| 6B.6 | Create `publish-success-message.tsx` (success with link) | 1 | — | [x] |
+| 6B.7 | Update guided-creator-store with PublishSuggestionState | 2 | 6B.1-6B.6 | [x] |
+| 6B.8 | Integration with completion triggers (≥80% threshold) | 2 | 6B.7 | [x] |
+| 6B.9 | Integration with BR-to-US flow (suggest after conversion) | 2 | 6B.8, Phase 5 | [x] |
+| 6B.10 | Add publish suggestion AI prompts to guided-prompts.ts | 1 | 6B.2 | [x] |
+| 6B.11 | Unit tests (connection state, store, components) | 2 | 6B.1-6B.10 | [x] |
+| 6B.12 | Integration tests (trigger flow, publish flow, error handling) | 3 | 6B.1-6B.10 | [x] |
+
+**Phase 6B commit:** `a1f4e23` (Group A) + `8088f0b` (Group B) — 546 tests passing
+
+#### Hardening (Group C — Post-6B)
+TDD polish, undo/redo wiring, ARIA accessibility, and edge-case coverage.
+
+| # | Task | Details | Status |
+|---|------|---------|--------|
+| C1 | Create `undo-stack.ts` | Generic pointer-based undo manager, max 20 entries | [x] |
+| C2 | Wire undo/redo into store | `_undoMgr` at module level, `undoLastChange`/`redoLastChange` in store | [x] |
+| C3 | `parseConditions` parenthetical fix | `_splitTopLevel()` helper, depth-tracks `(`/`)`, handles nested logic | [x] |
+| C4 | ARIA audit | `aria-live="polite"` on message list, `role="region"` on SectionCard, skip nav links | [x] |
+| C5 | Tests for C3 + C4 | 12 parseConditions edge-case tests + 4 ARIA tests, all green | [x] |
+
+**Group C commit:** pending — 575 tests passing (43 test files)
 
 **Phase 6B Files (Planned):**
 | File | Purpose |

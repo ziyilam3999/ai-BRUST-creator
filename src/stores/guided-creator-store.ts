@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 import type { UserStoryData } from '@/types/user-story'
 import { INITIAL_USER_STORY } from '@/types/user-story'
 import { getCompletionAdvice } from '@/lib/guided/advice-engine'
+import { createUndoManager } from '@/lib/guided/undo-stack'
 
 // Section definitions for Business Rules
 export type BRSection =
@@ -209,9 +210,16 @@ export interface GuidedCreatorState {
 
   // Auto-save recovery action (Plan §B2)
   restoreFromAutoSave: (snapshot: Record<string, unknown>) => void
+
+  // Redo action (Plan §C2)
+  redoLastChange: () => void
 }
 
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
+
+// C2: Module-level undo manager for section content changes (not persisted)
+type SectionsSnapshot = Record<DocumentSection, SectionState>
+const _undoMgr = createUndoManager<SectionsSnapshot>()
 
 const INITIAL_CONVERSION_STATE: ConversionState = {
   mode: 'none',
@@ -248,6 +256,7 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
 
       // Actions
       initSession: (docType) => {
+        _undoMgr.clear()
         set({
           documentType: docType,
           documentId: null,
@@ -284,16 +293,19 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
       },
 
       updateSection: (section, content) => {
-        set((state) => ({
-          sections: {
+        const before = get().sections
+        set((state) => {
+          const after: SectionsSnapshot = {
             ...state.sections,
             [section]: {
               ...state.sections[section],
               ...content,
               lastUpdated: new Date().toISOString(),
             },
-          },
-        }))
+          }
+          _undoMgr.push(before, after)
+          return { sections: after }
+        })
       },
 
       acceptDraft: (section) => {
@@ -320,7 +332,13 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
       },
 
       undoLastChange: () => {
-        // Placeholder - would implement undo stack
+        const prev = _undoMgr.undo()
+        if (prev) set({ sections: prev })
+      },
+
+      redoLastChange: () => {
+        const next = _undoMgr.redo()
+        if (next) set({ sections: next })
       },
 
       editSection: (section) => {
@@ -390,6 +408,7 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
       clearAiError: () => set({ lastAiError: null }),
 
       reset: () => {
+        _undoMgr.clear()
         set({
           documentType: 'business_rule',
           documentId: null,

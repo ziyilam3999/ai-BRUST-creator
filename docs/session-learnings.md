@@ -4,6 +4,122 @@
 
 ---
 
+## Session: 2026-02-18 (Protocol Phase 10 — Final Metric Phase Implementation)
+
+### [2026-02-18] Insight: GO-Stage Planning Shifts SHIP Cognitive Load
+
+**Scope:** protocol
+**Type:** Protocol Optimization — Behavioral Root Cause Analysis
+**Complexity:** Low (pattern deduction from Phase 9 adoption data)
+
+**What was learned:**
+SHIP's 35% non-adoption despite format teaching (Example S) has a root cause upstream: unnumbered GO plans force recall at SHIP time. By adding advisory GO SC5 ("Are steps numbered?"), the SHIP Traced mapping becomes mechanical — referencing the numbered list rather than recalling from memory.
+
+**Key Pattern: Cost-Shifting Between Gates**
+When a gate has high non-adoption despite format teaching, look upstream. The problem may not be that the agent doesn't know the format — it may be that preceding gates don't produce the data the later gate needs.
+
+| Problem Gate | Root Cause Location | Fix |
+|-------------|---------------------|-----|
+| SHIP Traced | GO Plan (unnumbered) | GO SC5 (numbered steps) |
+| TEST TDD | GO TDD Plan (missing cases) | GO SC3 (TDD Plan field) |
+| LEARN Coverage | VERIFY Investigation Plan (missing) | VERIFY step 3 (P9-S1) |
+
+**When to apply:** When a gate's scored example and Common Error additions don't improve adoption beyond ~65% — the remaining 35% may be upstream data quality, not format knowledge.
+
+---
+
+## Session: 2026-02-18 (Protocol Phase 7-9 + Cross-Model Validation)
+
+### [2026-02-18] Insight: Mechanical Enforcement Outperforms Advisory Guidance
+
+**Scope:** protocol
+**Type:** Protocol Optimization — Scoring Impact Analysis
+**Complexity:** Low (pattern identification from simulation data)
+
+**What was learned:**
+Across Phases 7-9, changes that add mechanical enforcement (hard caps, score ceilings on violation) consistently outperform advisory guidance (examples, templates, suggestions) in simulation scoring impact.
+
+**Key Evidence:**
+- P9-G2b (LEARN Friction Score Cap — mechanical): Highest Phase 9 impact. Binary "exceed 2 items → capped at 2" is immediately adopted.
+- P9-G1 (SHIP Example S — advisory/teaching): Lower impact. Examples teach correct behavior but adoption is gradual.
+- Historical pattern: TP-1 (First-Command Rule, mechanical) was 2nd-largest single-version gain (+2.45pp substance). SP-1 (Traced binary test, mechanical) had immediate adoption.
+
+**Key Pattern: Enforcement Hierarchy**
+
+| Type | Mechanism | Adoption Rate | First-Phase Impact |
+|------|-----------|:-------------:|:------------------:|
+| Binary cap | Score capped at N on violation | ~80% | High |
+| Structural rule | Required format/order | ~65% | Medium |
+| Example teaching | New scenario showing correct behavior | ~40% | Low-Medium |
+| Advisory text | Descriptive guidance | ~25% | Low |
+
+Mechanical caps work because they create a clear, testable invariant. The agent can self-check: "Did I exceed the limit? Yes → cap applies." Advisory guidance requires judgment, which varies by scenario and model.
+
+**ELI5:** Imagine a speed limit sign vs. a suggestion to "drive carefully." The speed limit (mechanical cap) works immediately because it's clear and binary. The suggestion (advisory) depends on interpretation. Protocol rules work the same way — hard caps beat soft suggestions.
+
+---
+
+### [2026-02-18] Insight: Cross-Model Validation Shows Protocol is Model-Invariant
+
+**Scope:** protocol
+**Type:** Protocol Validation — Cross-Model Robustness
+**Complexity:** Medium (first cross-model comparison, new methodology)
+
+**What was learned:**
+Running the same protocol simulation (v10.10.0, Phase 9) with both Sonnet 4.5 and Sonnet 4.6 as scorers revealed that the protocol is effectively model-invariant, with ≤0.02pp variance across all metrics.
+
+**Key Results:**
+
+| Metric | Sonnet 4.6 (sim-135) | Sonnet 4.5 (sim-138) | Δ |
+|--------|:--------------------:|:--------------------:|:---:|
+| Gate | 82.82% | 82.84% | +0.02pp |
+| Substance | 75.30% | 75.28% | −0.02pp |
+| CE | 80.02% | 80.02% | 0.00pp |
+
+**Key Pattern: Change-Type Determines Model Sensitivity**
+
+| Change Type | Cross-Model Variance | Example |
+|-------------|:-------------------:|---------|
+| Format/mechanical (caps, rules) | 0.00pp | P9-G2b LEARN Friction Cap |
+| Example/teaching | 0.00pp | P9-G1 SHIP Example S |
+| Substance/behavioral | ±0.02pp | P9-S1 Investigation Plan |
+
+Format changes produce identical scores because both models can deterministically check "is the format correct?" Substance changes (e.g., quality of investigation plans) involve judgment, introducing small model-specific variance — but within noise.
+
+**Decision Impact (D-013):** Sonnet 4.6 adopted as canonical scorer. Cross-model re-validation only needed for phases with behavioral/substance changes, not format-only phases. This halves simulation cost for mechanical-only phases.
+
+**ELI5:** Two teachers graded the same exam using the same rubric. They gave almost identical scores (within 0.02%). This means the rubric (protocol) is so clear that it doesn't matter which teacher grades it — the result is the same. So we picked one teacher as the "official" grader and only ask the second teacher to double-check when the exam has essay questions (substance changes), not multiple choice (format changes).
+
+---
+
+### [2026-02-18] Explanation: Phase 7-9 Cumulative Optimization Strategy
+
+**Scope:** protocol
+**Type:** Protocol Engineering — Multi-Phase Progression
+**Complexity:** Medium (3 phases, 10 changes, 6 simulation runs)
+
+**What was built:**
+Phases 7-9 represent a systematic optimization campaign that moved all three primary metrics upward over 3 consecutive versions:
+
+| Metric | v10.7.0 | v10.10.0 | Total Gain |
+|--------|:-------:|:--------:|:----------:|
+| Gate | 82.34% | 82.82% | +0.48pp |
+| Substance | 75.12% | 75.30% | +0.18pp |
+| CE | 79.18% | 80.02% | +0.84pp |
+
+**Phase Strategy:**
+- **Phase 7 (v10.8.0):** THINK precision. Targeted CE improvement through compact format enforcement. Result: CE +0.54pp (largest single-phase CE gain).
+- **Phase 8 (v10.9.0):** SPEC-TEST linkage. Targeted substance through test-spec requirement. Result: CE crossed 80% milestone. Substance +0.13pp.
+- **Phase 9 (v10.10.0):** Multi-target. 5 changes spanning examples, caps, templates, and error rows. Broadest scope. Result: Gate +0.16pp, all metrics up.
+
+**Key Pattern: Diminishing Returns are Logarithmic, Not Linear**
+
+Each phase required more changes for smaller absolute gains, but the per-change efficiency remained consistent (~0.03-0.05pp per change). The optimization is not hitting a wall — it's following the expected logarithmic curve where early gains are larger and later gains require more precision targeting.
+
+**ELI5:** It's like tuning a guitar. The first few turns of the peg make a big difference in pitch. As you get closer to the right note, each tiny adjustment matters less but is more precise. Phases 7-9 are the "fine tuning" — each change is smaller but carefully targeted, and together they add up to meaningful improvement.
+
+---
+
 ## Session: 2026-02-06 (AI-Guided Creation - Phase 4 Polish)
 
 ### [2026-02-06] Explanation: Phase 4 ActionBar Wiring & Auto-Advance

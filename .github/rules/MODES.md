@@ -1,6 +1,6 @@
 # Mode Workflows
 <!-- Referenced from: copilot-instructions.md -->
-<!-- Version: 7.9.0 -->
+<!-- Version: 7.11.0 -->
 <!-- Note: Replaces SCENARIOS.md (v5 had 7 scenarios A-G, v6 has 4 modes) -->
 
 ## Overview
@@ -101,6 +101,7 @@ Each command retains its unique behavior via overrides:
 | 5 | Implement code | Feature/fix/refactor done |
 | 6 | Verify (tests pass) | Quality confirmed |
 | 6b | **Verify-cite** (re-read changed code) | GO spec match confirmed |
+| 6c | **SPEC-TEST trace** (QCS 2+) | Every SPEC acceptance criterion has a matched TEST assertion |
 | 7 | TEST gate | Coverage verified |
 | 8 | Update docs + code-map.md | Docs current |
 | 9 | SHIP gate | Verified checklist |
@@ -230,10 +231,11 @@ Each command retains its unique workflow:
 |------|--------|--------|
 | 1 | OPEN gate | Context loaded |
 | 2 | THINK gate (if QCS >= 2) | Evidence + role analysis |
-| 3 | Investigation / Analysis | Findings |
-| 4 | Present findings | User-ready report |
-| 5 | If fixes needed -> GO gate -> shift to IMPLEMENT | |
-| 6 | LEARN gate | Outcome + insight |
+| 3 | **Investigation Plan:** State numbered list of areas to check (e.g., "1. Error reproduction 2. Root cause identification 3. Fix verification 4. Regression check") | Plan declared |
+| 4 | Investigation / Analysis per plan | Findings |
+| 5 | Present findings | User-ready report |
+| 6 | If fixes needed -> GO gate -> shift to IMPLEMENT | |
+| 7 | LEARN gate — include **Investigation coverage: N/M** where N = items investigated, M = items from Investigation Plan. Score 3 requires N ≥ M-1 (all or all-but-one items addressed). If N < M-1, note gaps in LEARN Friction. | Outcome + insight + coverage |
 
 ### `/debug` Specifics (4-Step)
 

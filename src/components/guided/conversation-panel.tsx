@@ -5,6 +5,7 @@ import { useGuidedCreatorStore } from '@/stores/guided-creator-store'
 import { useGuidedChat } from '@/hooks/use-guided-chat'
 import { MessageBubble } from './message-bubble'
 import { ActionBar } from './action-bar'
+import { PublishSuggestionCard } from './publish/publish-suggestion-card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Send, Loader2 } from 'lucide-react'
@@ -24,7 +25,17 @@ function getNextSection(
 }
 
 export function ConversationPanel() {
-  const { messages, isAiThinking, documentType, acceptDraft, editSection, navigateToSection } = useGuidedCreatorStore()
+  const {
+    messages,
+    isAiThinking,
+    documentType,
+    acceptDraft,
+    editSection,
+    navigateToSection,
+    publishSuggestion,
+    dismissPublishSuggestion,
+    setRemindLater,
+  } = useGuidedCreatorStore()
   const { sendMessage, regenerate } = useGuidedChat()
   const [input, setInput] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -82,6 +93,24 @@ export function ConversationPanel() {
         {messages.map((message) => (
           <MessageBubble key={message.id} message={message} />
         ))}
+
+        {/* A4: Render PublishSuggestionCard as a synthetic message in the list */}
+        {publishSuggestion.showSuggestion && (
+          <PublishSuggestionCard
+            documentType={documentType}
+            documentTitle="your document"
+            onPublish={() => {
+              // Navigate to publish flow — dismisses suggestion
+              dismissPublishSuggestion()
+            }}
+            onRemindLater={() => {
+              // Remind in 24 hours
+              const remindAt = new Date(Date.now() + 24 * 3600_000).toISOString()
+              setRemindLater(remindAt)
+            }}
+            onDismiss={dismissPublishSuggestion}
+          />
+        )}
 
         {isAiThinking && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">

@@ -4,9 +4,9 @@
 
 ## Current Session
 
-**Date:** 2026-02-17
-**Phase:** Phase 6 Gate Push — Complete ✅ | v10.7.0 SHIPPED ✅
-**Focus:** Phase 6 gate push (OPEN-1, LEARN-1, CE-1, THINK-1)
+**Date:** 2026-02-18
+**Phase:** ✅ ROADMAP CLOSED | v10.11.0 sim-141 FINAL + sim-142 Closure Validated | Maintenance Mode Active
+**Focus:** Roadmap closure execution complete + closure validation sim passed (sim-142)
 
 ### Completed This Session
 
@@ -127,6 +127,165 @@
 | Gate | 82.31% | **82.34–82.39%** (+0.03–0.08pp) |
 | Substance | 75.12% | **75.12%** (maintained) |
 | CE | 79.14% | **79.16–79.18%** (+0.02–0.04pp) |
+
+### Phase 7 — S3 THINK Precision (v10.8.0)
+
+16. **Phase 7 — S3 THINK Precision (v10.8.0):**
+    - **S3-THINK:** THINK compact format enforcement — explicit 3-5 line limit for QCS 2-3, structured Evidence/Approach format mandatory.
+    - **S3-EX:** New THINK example in EXAMPLES.md demonstrating compact vs. standard depth differentiation.
+    - Multi-round critique pipeline applied. All blocking issues resolved.
+    - sim-123/129 (consolidated): Gate 82.47% (+0.13pp), Substance 75.12% (maintained), CE 79.72% (+0.54pp).
+    - Shipped as v10.8.0.
+
+| Metric | v10.7.0 sim-126 | v10.8.0 sim-129 |
+|--------|:---------------:|:---------------:|
+| Gate | 82.34% | **82.47%** (+0.13pp) |
+| Substance | 75.12% | **75.12%** (maintained) |
+| CE | 79.18% | **79.72%** (+0.54pp) |
+
+### Phase 8 — S7 SPEC-TEST (v10.9.0)
+
+17. **Phase 8 — S7 SPEC-TEST (v10.9.0):**
+    - **S7-SPEC:** TEST gate spec-linkage rule — implementation tests must reference spec or requirement. TEST capped at score 2 without spec reference.
+    - **S7-PLAN:** Investigation plan template added to MODES.md for structured debugging approach.
+    - Multi-round critique pipeline applied. All blocking issues resolved.
+    - sim-130/132 (consolidated): Gate 82.66% (+0.19pp), Substance 75.25% (+0.13pp), CE 80.00% (+0.28pp). **CE 80% milestone reached.**
+    - Shipped as v10.9.0.
+
+| Metric | v10.8.0 sim-129 | v10.9.0 sim-132 |
+|--------|:---------------:|:---------------:|
+| Gate | 82.47% | **82.66%** (+0.19pp) |
+| Substance | 75.12% | **75.25%** (+0.13pp) |
+| CE | 79.72% | **80.00%** (+0.28pp) |
+
+### Phase 9 — Multi-Target Optimization (v10.10.0)
+
+18. **Phase 9 — Multi-Target Optimization (v10.10.0):**
+    - 5 changes across 4 files:
+      - **P9-G1:** SHIP Example S (EXAMPLES.md) — new SHIP-firing example with Traced line, 3-claim precision, GATE checklist. Demonstrates score 3 standard.
+      - **P9-G2a:** OPEN QCS Scenario 5 (GATES.md) — new QCS quick-scan scenario: "user asks to refactor auth module" → QCS 3 (multi-file + risk keyword). Teaching calibration.
+      - **P9-G2b:** LEARN Friction Score Cap (GATES.md) — friction items capped at 2. Exceeding → LEARN score capped at 2. Mechanical enforcement of conciseness.
+      - **P9-S1:** S7-V Investigation Plan Template (MODES.md) — structured 4-step investigation plan for VERIFY mode. Evidence → Hypotheses → Diagnostic Plan → Findings format.
+      - **P9-C1:** S2 Common Error Row (CONTEXT.md) — new common error: "Using semantic_search when exact string known" → "Use grep_search for exact matches."
+    - Multi-round critique pipeline applied. Token budget: ~180 tokens (1,110 remaining of 1,950).
+    - **Sonnet 4.6 simulation** (sim-133/134/135): Gate 82.82% (+0.16pp), Substance 75.30% (+0.05pp), CE 80.02% (+0.02pp). Spread 0.09pp.
+    - **Sonnet 4.5 cross-model simulation** (sim-136/137/138): Gate 82.84% (+0.18pp), Substance 75.28% (+0.03pp), CE 80.02% (+0.02pp). Spread 0.08pp.
+    - **Cross-model variance:** ≤0.02pp across all metrics. Model-robustness score: 9.5/10.
+    - PROTOCOL_CHANGELOG.md updated with v10.10.0 entry. Synced to all 7 repos.
+    - Shipped as v10.10.0.
+
+19. **Cross-Model Validation (D-013):**
+    - First cross-model simulation: same protocol scored by both Sonnet 4.5 and 4.6.
+    - Results: format/mechanical changes show 0.00pp variance; substance changes show ±0.02pp variance.
+    - Decision: Sonnet 4.6 as canonical scorer. Cross-model re-run only for behavioral/substance changes, not every phase.
+    - Model-robustness validated: protocol is model-invariant for practical purposes.
+
+### Key Metrics (Current)
+
+| Metric | v10.7.0 sim-126 | v10.8.0 sim-129 | v10.9.0 sim-132 | v10.10.0 sim-135 | **v10.11.0 sim-141 (FINAL)** |
+|--------|:---------------:|:---------------:|:---------------:|:----------------:|:----------------------------:|
+| Gate | 82.34% | 82.47% | 82.66% | 82.82% | **82.94%** (+0.12pp) |
+| Substance | 75.12% | 75.12% | 75.25% | 75.30% | **75.36%** (+0.06pp) |
+| CE | 79.18% | 79.72% | 80.00% | 80.02% | **80.00%** (−0.02pp) |
+| Spread | — | — | — | — | **0.08pp** |
+
+### Next Steps
+
+- **✅ ROADMAP CLOSED — Maintenance mode active.**
+- No new metric-targeting phases. Protocol evolution roadmap is complete (~33 sessions, v7.4 → v10.11.0).
+- Regression monitoring: ad-hoc. If any metric regresses >0.10pp, perform targeted fix + sim validation.
+- GATES.md 950-line dedup trigger (C1): currently ~875 lines, 75 headroom. Auto-triggers on growth.
+- 6-month adoption review (advisory): run 12-scenario subset sim, log trends.
+
+### Closure Items Completed (2026-02-18)
+
+| Item | Session | What Was Done |
+|------|:-------:|---------------|
+| A1: `/learn-review` command | S1 | Created `.claude/commands/learn-review.md` — reads learn-persist.md, groups by category, proposes protocol refinements |
+| A2: Session bootstrap | S1 | Added Learn-Persist Bootstrap section to `.github/rules/SESSION.md` — auto-loads 5 most recent learn-persist entries on session start |
+| A3: SIM-50 | S1 | Added SIM-50 (Cross-Session Recovery) to SIMULATION_PLAN.md — validates /learn-review + bootstrap end-to-end. 50 scenarios total. |
+| B1: MCP gate_check spike | S2 | Produced `tmp/mcp-gate-check-spike.md` — partially viable (65% structural checks, 35% semantic). Deferred to maintenance. |
+| S3: Formal closure | S3 | Roadmap doc updated (CLOSED), D-015 addendum, progress.md maintenance mode, changelog entry |
+| **sim-142: Closure validation** | **Post-S3** | **8-scenario single-run sim. 8/8 exit criteria PASS. Zero regression. CE delta −0.01pp (vs predicted −0.01 to −0.02pp). QCS 0-1 invariant at 99.4%. Sonnet 4.6 established as monitoring baseline. Report: `tmp/sim-report/sim-report-142-v10.11.0-closure-consolidated.md`** |
+
+### Spin-Off Items (Platform-Triggered — from progress.md Future section)
+
+| # | Item | Trigger | Status |
+|---|------|---------|:------:|
+| D1 | VS Code Copilot hook/plugin API (Phase 5A) | VS Code API availability | 📋 Waiting |
+| D2 | Claude Code migration evaluation (Phase 5B) | Platform maturity | 📋 Waiting |
+| D3 | Skills as installable plugins (Phase 5D) | Plugin marketplace | 📋 Waiting |
+| D4 | Claude Code hooks evaluation (P25) | Platform trigger | 📋 Waiting |
+| D5 | Model-tier config (auto model detection) | Multi-model environments common | 📋 Waiting |
+| D6 | Cross-family validation (GPT-4.1, Gemini) | New model family deployment | 📋 Waiting |
+
+### Maintenance Mode Triggers
+
+| Trigger | Action |
+|---------|--------|
+| Regression >0.10pp in any metric | Targeted fix + sim validation run |
+| GATES.md >950 lines | Dedup pass |
+| New model family deployment | Evaluate D6 |
+| Platform API available (VS Code hooks, Claude Code) | Evaluate D1–D4 |
+| 6-month adoption review (advisory) | See §6-Month Adoption Review Procedure below |
+
+### Final Roadmap Scores (Official)
+
+| Metric | Score | Floor | Stretch | Floor Met? | Status |
+|--------|:-----:|:-----:|:-------:|:----------:|:------:|
+| Gate | **82.94%** | ≥82.90% | ≥83.00% | ✅ | FINAL |
+| Substance | **75.36%** | ≥75.30% | ≥75.40% | ✅ | FINAL |
+| CE | **80.00%** | ≥79.95% | ≥80.05% | ✅ | FINAL |
+| Spread | **0.08pp** | ≤0.50pp | ≤0.12pp | ✅ | FINAL |
+
+### 6-Month Adoption Review Procedure
+
+> **When:** 6 months from v10.11.0 closure (2026-02-18), i.e., ~August 2026. Adjust if protocol adopted on a new project at a later date.
+
+**Baselines:** sim-141 Final Scores (table above) + sim-142 Sonnet 4.6 monitoring baseline.
+
+**Inputs:**
+- `tmp/learn-persist.md` — focus on entries **after 2026-02-18** (earlier entries are protocol-evolution context, not adoption data)
+- `tmp/compliance-log.jsonl` — may be sparse; run `/metrics` first to populate if needed
+- `docs/defects.md`, `docs/decisions.md` — absence of entries = no notable friction (positive signal)
+
+**Procedure:**
+1. Verify sync consistency across active repos (`node tools/sync/index.mjs` from ai-protocol)
+2. Run 12-scenario sim subset per SIMULATION_PLAN.md category-balanced selection
+3. Compare to sim-141 baselines — flag any regression >0.10pp
+4. Review `learn-persist.md` post-2026-02-18 entries for recurring friction patterns (3+ entries on same topic = pattern)
+5. Check deferred proposals D1–D6 trigger statuses
+6. Assess QCS scaling: is quick mode (QCS 0-1) used appropriately vs full ceremony (QCS 2+)?
+
+**Success Criteria:** No regression >0.10pp | No recurring friction pattern (3+ entries) | Deferred proposals still correctly deferred
+
+**Output:** Append review summary to progress.md. Log triggered actions in decisions.md. If regression found → exit maintenance mode, follow targeted-fix trigger.
+
+### Phase 10 — Final Metric Phase (v10.11.0)
+
+20. **Phase 10 — Final Metric Phase (v10.11.0):**
+    - 3 changes across 3 files (strict scope constraint — no 4th change):
+      - **P10-G1:** TEST Example R (EXAMPLES.md) — new TEST-firing example showing score 2 vs 3 discrimination. Score 3 requires verbatim RED/GREEN terminal output + coverage delta (Δ+Npp) + function:line citations. Score 2 = narrative summary without terminal evidence. +42 lines.
+      - **P10-G2:** GO Self-Check 5 (advisory) + SHIP Common Error 8 (GATES.md) — GO SC5: "Are Plan steps explicitly numbered?" (advisory, not blocking). SHIP CE8: "Unnumbered GO plan → recall failure at SHIP time → Traced undercounts." Root cause: cognitive load at SHIP time when GO steps weren't numbered. +4 lines net.
+      - **P10-S1:** VERIFY Investigation Completeness (MODES.md + GATES.md) — VERIFY step 7 strengthened: "Investigation coverage: N/M where N ≥ M-1 for score 3." TEST SC9 (advisory): "If VERIFY mode: does LEARN include N/M field?" +3 lines net.
+    - Token budget: +42 EXAMPLES.md, +4 GATES.md net (875 lines, 75 headroom to 950 trigger), -1 MODES.md net.
+    - Protocol version: v10.10.0 → v10.11.0.
+    - Pending: simulation validation.
+
+21. **Phase 10 Simulation (sim-141):**
+    - Full 49-scenario dual-run (R1 + R2). Scorer: Opus 4.6.
+    - **Results:** Gate 82.94% (+0.12pp), Substance 75.36% (+0.06pp), CE 80.00% (−0.02pp), Spread 0.08pp.
+    - All floor targets passed: Gate ≥82.90% ✅, Sub ≥75.30% ✅, CE ≥79.95% ✅.
+    - Stretch targets missed: Gate −0.06pp, Sub −0.04pp, CE −0.05pp. Confirms structural ceiling.
+    - D-014 stall rule applied: accept as official final roadmap score.
+    - **Verdict:** Phase 10 SHIPPED ✅. All metric-targeting phases complete.
+
+22. **Roadmap Closure Plan Created:**
+    - 17 remaining items fully dispositioned: 3 implement (A1–A3), 1 spike (B1), 1 maintenance (C1), 6 spin-off (D1–D6), 6 dropped (E1–E6).
+    - 3 closure sessions planned: S1 (Phase 3 remnants), S2 (Phase 5C MCP spike), S3 (formal closure).
+    - D-015 decision record added to decisions.md.
+    - Closure plan: `tmp/protocol-improvement/roadmap-closure-plan.md`
+    - Closure simulation plan: `tmp/protocol-improvement/closure-simulation-plan.md`
 
 ---
 

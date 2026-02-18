@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useGuidedCreatorStore } from '@/stores/guided-creator-store'
 import { useGuidedChat } from '@/hooks/use-guided-chat'
 import { ConversationPanel } from './conversation-panel'
@@ -21,13 +21,36 @@ const TYPE_LABELS = {
 }
 
 export function GuidedCreatorContainer({ documentType, onClose, onSave }: Props) {
-  const { initSession, overallCompletion, canSaveDraft } = useGuidedCreatorStore()
+  const {
+    initSession,
+    overallCompletion,
+    canSaveDraft,
+    publishSuggestion,
+    showPublishSuggestion,
+  } = useGuidedCreatorStore()
   const { saveDraft } = useGuidedChat()
   const [isSaving, setIsSaving] = useState(false)
+  // Track last completion that triggered suggestion to avoid re-firing on each render
+  const suggestionFiredAt = useRef<number | null>(null)
 
   useEffect(() => {
     initSession(documentType)
   }, [documentType, initSession])
+
+  // A2: Fire publish suggestion trigger when completion reaches ≥80%
+  // Guard: not dismissed, and remindLater respected with timestamp comparison
+  useEffect(() => {
+    const { dismissed, remindLater, remindAt } = publishSuggestion
+    if (overallCompletion < 80) return
+    if (dismissed) return
+    if (remindLater) {
+      if (!remindAt || Date.now() <= new Date(remindAt).getTime()) return
+    }
+    // Only fire once per completion threshold crossing
+    if (suggestionFiredAt.current === overallCompletion) return
+    suggestionFiredAt.current = overallCompletion
+    showPublishSuggestion()
+  }, [overallCompletion, publishSuggestion, showPublishSuggestion])
 
   return (
     <div className="flex flex-col h-full">

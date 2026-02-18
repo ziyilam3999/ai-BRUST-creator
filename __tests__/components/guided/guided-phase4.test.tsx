@@ -36,6 +36,13 @@ const mockStoreState = {
   isReadyForReview: false,
   lastSessionSummary: null,
   sessionStartedAt: '2026-01-01T00:00:00Z',
+  publishSuggestion: {
+    showSuggestion: false,
+    dismissed: false,
+    remindLater: false,
+    remindAt: null,
+    publishedUrl: null,
+  },
   initSession: vi.fn(),
   resumeSession: vi.fn(),
   addMessage: vi.fn(),
@@ -49,6 +56,10 @@ const mockStoreState = {
   setDocumentStatus: vi.fn(),
   setAiThinking: vi.fn(),
   reset: vi.fn(),
+  showPublishSuggestion: vi.fn(),
+  dismissPublishSuggestion: vi.fn(),
+  setRemindLater: vi.fn(),
+  setPublished: vi.fn(),
 }
 
 vi.mock('@/stores/guided-creator-store', () => ({

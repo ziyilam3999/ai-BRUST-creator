@@ -251,6 +251,36 @@ You can skip this by typing "skip".`,
 }
 
 /**
+ * AI prompts for publish suggestions shown when document reaches ≥80% completion.
+ * Three variants: Business Rule completion, User Story completion, post BR-to-US conversion.
+ * @spec tmp/remaining-implementation-plan.md Group A Step A1
+ */
+export const PUBLISH_SUGGESTION_PROMPTS = {
+  business_rule: `Your Business Rule is looking great and is ready to publish!
+
+Would you like to publish it to Confluence? I can format it as a page with:
+- A structured layout with all sections
+- IF/THEN/ELSE rule statement formatted clearly
+- Exceptions and examples as tables
+
+This makes it easy to share with your team.`,
+
+  user_story: `Your User Story is complete and ready to create in JIRA!
+
+Would you like to create it as a JIRA issue? I can add:
+- Story title and description
+- Acceptance criteria as checkboxes
+- Definition of Done checklist
+- Priority and story points fields
+
+This gets it into your backlog right away.`,
+
+  post_conversion: `Your User Stories have been saved! You can now publish them to JIRA.
+
+Would you like to create JIRA issues for all accepted stories? I can batch-create them with full detail from the conversion.`,
+}
+
+/**
  * Get the initial prompt for a section.
  */
 export function getSectionInitialPrompt(

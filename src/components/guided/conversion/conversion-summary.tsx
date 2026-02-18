@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CheckCircle, Plus, Save } from 'lucide-react'
-import type { GeneratedStory } from '@/stores/guided-creator-store'
+import { useGuidedCreatorStore, type GeneratedStory } from '@/stores/guided-creator-store'
 
 interface Props {
   stories: GeneratedStory[]
@@ -14,8 +14,17 @@ interface Props {
 }
 
 export function ConversionSummary({ stories, onSaveAll, onAddManual, isSaving }: Props) {
+  const { showPublishSuggestion } = useGuidedCreatorStore()
   const acceptedCount = stories.filter((s) => s.status === 'accepted').length
   const totalCount = stories.length
+
+  // A3: After successful save, trigger the publish suggestion
+  const handleSaveAll = () => {
+    onSaveAll()
+    if (totalCount > 0) {
+      showPublishSuggestion()
+    }
+  }
 
   return (
     <Card className="border-2">
@@ -59,7 +68,7 @@ export function ConversionSummary({ stories, onSaveAll, onAddManual, isSaving }:
         </div>
 
         <div className="flex gap-2 pt-2 border-t">
-          <Button onClick={onSaveAll} className="flex-1" disabled={isSaving || totalCount === 0}>
+          <Button onClick={handleSaveAll} className="flex-1" disabled={isSaving || totalCount === 0}>
             <Save className="w-4 h-4 mr-2" />
             {isSaving ? 'Saving...' : 'Save All Stories'}
           </Button>

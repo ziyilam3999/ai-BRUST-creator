@@ -1,6 +1,6 @@
 # Gate Specifications
 <!-- Referenced from: copilot-instructions.md -->
-<!-- Version: 8.0.0 -->
+<!-- Version: 8.3.0 -->
 <!-- Note: Absorbs content from FAST_PATH.md (deleted in v6.0) and CHECKLISTS.md (deleted in v5.x) -->
 <!-- Advanced/optional practices planned for future version -->
 
@@ -367,7 +367,7 @@ Standard practices named in the prompt are not scope concerns UNLESS the specifi
 **Assumptions quality:** `None` when choices were made = score 2. List specific choices = score 3.
 
 **Self-Check (Before Writing GO Block, QCS 2+):**
-Before writing any GO block at QCS 2+, perform this 4-point check:
+Before writing any GO block at QCS 2+, perform this 5-point check:
 1. **Plan-TDD prefix:** If Test-first: Y, does Plan begin with "Step 1: Run baseline tests. Step 2: Write failing test..."?
    If no → fix before outputting.
 2. **Assumptions scan:** Run the 6-item checklist above. Count results. If count > 0 but you wrote "None" → list them.
@@ -375,8 +375,9 @@ Before writing any GO block at QCS 2+, perform this 4-point check:
 3. **TDD Plan field:** If Test-first: Y, is TDD Plan present with test file + ≥2 cases + strategy?
    If no → add before outputting.
 4. **Assumption count (QCS 2+):** Count listed assumptions. If checklist (item 2) yielded > 0 items, verify ≥ 2 specific assumptions listed. If count < 2 → add specific items from checklist results.
+5. **Numbered steps (advisory):** Are Plan implementation steps explicitly numbered? Numbered steps create a reference list that SHIP Traced can mechanically confirm. Unnumbered plans cause Traced count mismatches at SHIP time.
 
-If any check fails, fix before outputting GO.
+If any check (1-4) fails, fix before outputting GO. Item 5 is advisory — unnumbered plans are not blocking but degrade SHIP traceability.
 
 ### Common GO Errors (self-check prevents these)
 
@@ -568,6 +569,13 @@ After the final successful test run in this response, MUST call `read_file` or `
 4. Do cited test counts match terminal output? If uncertain → re-read terminal.
 5. `Verified:` prerequisite: run `read_file` or `grep_search` on at least one changed file after implementation. Then cite function/pattern names + line numbers (≥1 at QCS 2-3, ≥2 at QCS 4+). No post-implementation tool call → run it now. Vague assertions without tool evidence → rewrite with specifics.
 6. THINK edge cases (QCS 2+ IMPLEMENT): Each THINK edge case addressed in implementation? (guard clause → ✅, N/A → note why, unhandled → fix or LEARN Friction)
+6b. Output routing: Any subagent output >500 tokens written to file (not pasted inline)? Any response section >500 tokens routed to `create_file`? If violated → note in LEARN Friction.
+
+**Substance checks (QCS 2+ IMPLEMENT):**
+8. SPEC-TEST traceability: Does every SPEC acceptance criterion (from GO block) have a corresponding TEST assertion? List each criterion and its matched test. If any criterion lacks a test → add to LEARN Friction: "Substance gap: SPEC criterion [X] has no matched TEST assertion."
+
+**VERIFY mode check (advisory):**
+9. If VERIFY mode: does LEARN include `Investigation coverage: N/M` field referencing the Investigation Plan from step 3? N = items investigated, M = planned items. If missing → add before outputting LEARN.
 
 **Quality checks (QCS 4+ only):**
 7. `Coverage:` line has baseline + final + signed delta?
@@ -666,9 +674,11 @@ If any check fails, fix before outputting SHIP.
 | Phantom Claim | `"Updated README"` in prose, no edit_file call | Either edit README or don't claim it |
 | Single-line Verified (QCS 2+) | `Verified: yes — changes look correct` | Per-claim ✅/❌ with tool→file mapping |
 | Missing Claims count | SHIP without Claims field at QCS 2+ | `Claims: [N] files modified, [N] created, [N] commands run` |
-| Command undercounting | `Claims: 2 modified, 1 command` (ran 3 terminal commands) | `Claims: 2 modified, 3 commands` (each `run_in_terminal` = 1 claim) |
-| GO-untraceable | Claims all ✅ but GO Plan step 3 never executed, Traced line missing or shows <100% | Compare Claims against GO Plan — Traced: [N/N] with each step mapped |
-| Verb-count mismatch | Claims: "2 modified" but response text says "updated", "added", "created" (3 action verbs) | Claims count matches ALL action verbs in response text — each action = 1 claim. Mismatch → SHIP capped at 2 |
+| Command undercounting | `Claims: 2 modified, 1 command` (ran 3 terminal commands) | `Claims: 2 modified, 3 commands` (count each terminal call) |
+| GO-untraceable | Traced line missing or shows <100% | Compare Claims against GO Plan — Traced: [N/N] with each step mapped |
+| Verb-count mismatch | Claims: "2 modified" but 3 action verbs in response text | Claims count matches ALL action verbs. Mismatch → capped at 2 |
+| Traced count mismatch | `Traced: 3/5` when GO had 5 steps — 2 steps unaccounted | `Traced: 5/5` — every GO step explicitly numbered and mapped to a Claim with tool evidence |
+| Unnumbered GO plan | GO Plan listed steps as prose (no numbers) → recall failure at SHIP time → Traced undercounts | GO Plan uses numbered steps (see GO SC5) → SHIP Traced maps each number to a Claim |
 
 **Verified scoring:** `yes` without evidence → partial. `yes` + single cite → good (QCS 0-1). Per-claim ✅/❌ → required (QCS 2+). `no — [specific]` → honest.
 
@@ -721,8 +731,7 @@ Good Friction (score 3): References specific observations from this response:
   `"TEST gate used narrative count instead of terminal paste. TDD declared but
    RED CHECK shows 0 new failures — possible pre-existing tests."`
 
-Bad Friction (score 2): Generic or empty:
-  `"None"` | `"All gates fired correctly"` | `"No issues found"`
+Bad Friction (score 2 cap): Generic or empty — `"None"` | `"All gates fired correctly"` | `"No issues found"`
 
 **Friction Self-Check (run before writing Friction):**
 1. TEST self-check gaps? → Copy to Friction
@@ -769,6 +778,7 @@ Compliance:
 **LEARN Field Presence Rule (hard-enforced):**
 Every Tier 2 LEARN block MUST contain these 3 fields: `Outcome`, `What changed`, `Insight`. Missing any → LEARN capped at score 2.
 `ELI5` is additionally required when Learning Mode is ON (default). Omit ELI5 only when user has set "quick mode."
+**Friction quality cap:** Friction value of `None`, `N/A`, or single-word generic (e.g., "complexity") at QCS 2+ → LEARN capped at score 2. Friction must cite a *specific* observation from this response (per Friction Field Quality rules above) or use the verified-clean format with substance markers.
 
 **Per-gate table self-check (before writing the compliance table):**
 1. Scan your response for these blocks: OPEN, THINK, GO, TEST, SHIP

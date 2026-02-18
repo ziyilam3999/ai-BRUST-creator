@@ -1,9 +1,150 @@
 # Protocol Changelog
-<!-- Version: 1.6.0 -->
+<!-- Version: 1.7.0 -->
 
 > **Purpose:** Track version history of `copilot-instructions.md`
 > **Location:** `.github/copilot-instructions.md`
 > **Archive:** For versions prior to v7.2.0, see [docs/changelog-archive.md](../../docs/changelog-archive.md)
+
+---
+
+## [v10.11.0 — ROADMAP CLOSED] - 2026-02-18
+
+### Roadmap Closure — Protocol Evolution Complete
+
+**Final scores (sim-141):** Gate 82.94% | Substance 75.36% | CE 80.00% | Spread 0.08pp
+**Total sessions:** ~33 (v7.4 → v10.11.0)
+**Decision:** D-015 — accept as official final scores, enter maintenance mode
+
+#### Closure Items Implemented
+
+##### SESSION.md — Learn-Persist Bootstrap (A2)
+- Added "Learn-Persist Bootstrap" section before Resume Protocol
+- On session start, auto-loads 5 most recent learn-persist entries from last 7 days
+- `LP:[N]` suffix appended to OPEN line when entries loaded
+- Silent fallback: if file missing, empty, or <5 entries → skip without error
+
+##### SIMULATION_PLAN.md — SIM-50: Cross-Session Recovery (A3)
+- Added SIM-50 scenario to Category 3 (Gate-Specific Deep Tests)
+- 2-session simulation: Session A populates learn-persist, Session B tests bootstrap + /learn-review
+- Scoring rubric: 0-3 scale for cross-session recovery pipeline
+- Scenario count: 49 → 50. Version: 6.2.0 → 6.3.0
+
+##### .claude/commands/learn-review.md — /learn-review Command (A1)
+- New command: reads tmp/learn-persist.md, groups entries by category (INSIGHT, FRICTION, BUG, VIOLATION, OPTIMIZATION, GAP)
+- 8-step workflow: parse → filter → group → detect patterns → report → propose refinements → apply (if requested)
+- Supports timeframe and category filters
+- Completes Phase 3 cross-session intelligence loop (LEARN-PERSIST → bootstrap → /learn-review)
+
+##### MCP gate_check Spike (B1)
+- Spike report: `tmp/mcp-gate-check-spike.md`
+- Verdict: **Partially viable** — 22/34 self-check items (65%) mechanically parseable via regex. 12/34 (35%) require semantic judgment
+- 3 viability criteria: parse ≥3 items ✅, validate sample ⚠️ partial, <5s ✅
+- Recommendation: defer to maintenance. Revisit if /simulate scoring becomes a bottleneck
+
+#### Item Disposition (17 items — complete accounting)
+- **3 implemented:** /learn-review (A1), session bootstrap (A2), SIM-50 (A3)
+- **1 spike:** MCP gate_check (B1) — partially viable, deferred
+- **1 maintenance rule:** GATES.md 950-line dedup trigger (C1)
+- **6 spun off:** Phase 5A/5B/5D, P25, model-tier config, cross-family validation → progress.md
+- **6 dropped:** P17 (XML markers), cost tracking, escalation protocol, Opus v8.4 control, Phase 3C (QCS), Phase 4C (YAML)
+
+#### Closure Validation — sim-142 (2026-02-18)
+- **8-scenario single-run subset** (SIM-01, -03, -05, -07, -09, -11, -18, -46)
+- **Exit criteria: 8/8 PASS** — zero regression confirmed
+- QCS 0-1 invariants (6 scenarios): 99.4% — SESSION.md bootstrap confirmed NOT leaking into Protocol Lite
+- A2 CE delta: −0.01pp (predicted −0.01 to −0.02pp) — well above 79.95% floor
+- Official roadmap scores confirmed unregressed: Gate 82.94% / Sub 75.36% / CE 80.00%
+- **Sonnet 4.6 established as ongoing monitoring model baseline** (replaces Opus 4.6)
+- Report: `tmp/sim-report/sim-report-142-v10.11.0-closure-consolidated.md`
+
+#### Maintenance Mode
+- No new metric-targeting phases
+- Regression monitoring: ad-hoc (>0.10pp → targeted fix)
+- GATES.md dedup: 950-line threshold (currently ~875)
+- 6-month adoption review: advisory, 12-scenario subset simulation
+
+---
+
+## [v10.11.0] - 2026-02-18
+
+### Changed — Phase 10: Final Metric Phase (Gate 83% Step 2)
+
+**Strategic context:** v10.10.0 achieved 82.82% gate, 75.30% substance, 80.02% CE. Phase 10 is the **final metric-targeting phase** before roadmap closure. 3 changes target Gate ≥82.90% (floor) / ≥83.00% (stretch), Substance ≥75.30%, CE ≥79.95%. Strict 3-change scope constraint enforced for measurement precision.
+
+#### EXAMPLES.md — P10-G1: Example R (TEST Score 2 vs Score 3 — TDD Evidence Quality)
+- Added Example R after Example S: demonstrates TEST score discrimination focused on TDD evidence quality
+- Score 3 requires verbatim terminal evidence: RED CHECK with assertion failure messages, GREEN CHECK with pass count, coverage delta (Δ+Npp with before/after numbers), Verified with function:line citations
+- Score 2 shows plausible narrative ("tests failed, then passed") without terminal output — caps at score 2
+- Teaching point: "describing TDD" vs "evidencing TDD" is the score 2→3 boundary
+- TEST has 2nd-largest gate gap (0.480/3) — largest untargeted gate; proven Example pattern from P9-G1
+- Impact: Gate +0.04-0.08pp (High confidence)
+
+#### GATES.md — P10-G2: GO Self-Check 5 (Advisory Numbered Steps) + SHIP Common Error 8
+- GO Self-Check expanded from 4 to 5 items: SC5 "Are Plan implementation steps explicitly numbered?" (advisory, not blocking)
+- Numbered GO steps create a reference list that SHIP Traced can mechanically confirm — shifts cognitive cost from SHIP-time recall to GO-time planning
+- SHIP Common Error row 8 added: "Unnumbered GO plan → recall failure → Traced undercounts" with cross-reference to GO SC5
+- Root cause fix for 35% SHIP non-adoption identified in Phase 9: cognitive load at abbreviation time
+- Impact: Gate +0.03-0.06pp (Medium confidence)
+
+#### MODES.md + GATES.md — P10-S1: S7-V VERIFY Investigation Completeness
+- VERIFY workflow step 7 strengthened: "Investigation coverage: N/M where N = items investigated, M = items from Investigation Plan. Score 3 requires N ≥ M-1"
+- TEST Self-Check 9 added (VERIFY-specific, advisory): "If VERIFY mode: does LEARN include Investigation coverage: N/M field?"
+- Extends Phase 9's S7-V Investigation Plan with completion scoring mechanism (same pattern as S7 Traced N/N for IMPLEMENT)
+- Impact: Substance +0.04-0.08pp (Medium-High confidence)
+
+#### Token Budget
+- EXAMPLES.md: +42 lines (1010 → 1052)
+- GATES.md: +4 lines net (871 → 875, safe at 75 lines headroom to 950 trigger)
+- MODES.md: -1 line net (317 → 316, row expansion consolidated)
+- QCS 0-1 impact: None (all changes in QCS 2+ tier files)
+
+---
+
+## [v10.10.0] - 2026-02-18
+
+### Changed — Phase 9: Gate 83% Step 1 + Substance Momentum
+
+**Strategic context:** v10.9.0 achieved 82.66% gate, 75.25% substance, 80.00% CE. Phase 9 targets Gate ≥82.85% (stretch) / ≥82.66% (floor) and Substance ≥75.35% (stretch) / ≥75.25% (floor) through 5 changes across EXAMPLES.md, GATES.md, MODES.md, CONTEXT.md. Multi-round critique pipeline applied; sim ran dual-run (R1 optimistic + R2 conservative) → consolidated.
+
+#### EXAMPLES.md — P9-G1: Example S (SHIP Traced Heterogeneous Plan)
+- Added Example S after Example Q: demonstrates SHIP Traced 5/5 vs 3/5 discrimination
+- GO plan: schema migration + API endpoint + validation layer + integration test + documentation update (heterogeneous 5-step)
+- SHIP Traced must reference all 5 steps by partial match — missing 2 → score capped at 2
+- First SHIP example in EXAMPLES.md; fills critical format-teaching gap
+- Impact: SHIP +0.03-0.06pp gate (primary driver for SIM-17)
+
+#### GATES.md — P9-G1: SHIP Common Error (Traced Count Mismatch)
+- Added CE row 7: "Traced count mismatches GO step count → score capped at 2"
+- Compressed prior rows 4-6 to maintain 870-line net-zero budget
+- Impact: compound with Example S — behavioral reinforcement
+
+#### EXAMPLES.md — P9-G2a: Example N Scenario 5 (QCS 2 vs 3 Boundary)
+- Added Scenario 5 to Example N: "update 3 config files to use new env var naming" → mechanical multi-file = QCS 2, not QCS 3
+- Multi-file alone does not trigger QCS 3; requires uncertainty/risk/cross-domain indicator
+- Impact: OPEN +0.02-0.04pp gate (QCS disambiguation)
+
+#### GATES.md — P9-G2b: LEARN-1 Friction Quality Cap
+- Added sentence to LEARN-1 Field Presence Rule: "Friction value of `None`, `N/A`, or single-word generic at QCS 2+ → LEARN capped at score 2"
+- Compressed "Bad Friction" example from 2 lines to 1 line (net-zero budget)
+- Binary enforcement: specific substance markers OR score 2 — no ambiguity
+- Impact: LEARN +0.04-0.08pp gate (highest-performing Phase 9 change at +0.06pp consolidated, 80% adoption)
+
+#### MODES.md — P9-S1: S7-V VERIFY Investigation Plan
+- Expanded VERIFY workflow from 6 to 7 steps
+- Step 3 (new): "Investigation Plan: State numbered list of areas to check"
+- Step 7 LEARN: "include Investigation coverage: N/M plan items addressed"
+- Impact: Substance +0.03-0.07pp (primary), Gate +0.01-0.02pp (secondary), CE −0.01pp (minor overhead)
+- VERIFY substance baseline established: 76.1% (SIM-06)
+
+#### CONTEXT.md — P9-C1: S2 Enforcement Common Error
+- Added Common Error table at end of §2 anti-patterns: "Skipped headers-first scan for unfamiliar file — read entire file instead → read first 15 lines to confirm relevance before full read (~100 tok vs ~500 tok)"
+- S2 adoption: 52% → 60% (+8pp)
+- Impact: CE +0.02-0.04pp
+
+**Metrics (sim-135 consolidated):** Gate 82.82% (+0.16pp) | Substance 75.30% (+0.05pp) | CE 80.02% (+0.02pp)
+**R1/R2 spread:** 0.09pp gate (tightest since Phase 5)
+**Decision:** All 3 floor targets PASS. Stretch targets missed by ≤0.05pp. Deployed.
+**Token budget:** GATES.md net-zero (870 lines). EXAMPLES.md +73 lines (936→1009). MODES.md +2 lines. CONTEXT.md +3 lines.
 
 ---
 

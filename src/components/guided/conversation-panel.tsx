@@ -6,6 +6,7 @@ import { useGuidedChat } from '@/hooks/use-guided-chat'
 import { MessageBubble } from './message-bubble'
 import { ActionBar } from './action-bar'
 import { PublishSuggestionCard } from './publish/publish-suggestion-card'
+import { AIErrorMessage } from './ai-error-message'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Send, Loader2 } from 'lucide-react'
@@ -29,12 +30,15 @@ export function ConversationPanel() {
     messages,
     isAiThinking,
     documentType,
+    currentSection,
     acceptDraft,
     editSection,
     navigateToSection,
     publishSuggestion,
     dismissPublishSuggestion,
     setRemindLater,
+    lastAiError,
+    clearAiError,
   } = useGuidedCreatorStore()
   const { sendMessage, regenerate } = useGuidedChat()
   const [input, setInput] = useState('')
@@ -117,6 +121,24 @@ export function ConversationPanel() {
             <Loader2 className="w-4 h-4 animate-spin" />
             AI is thinking...
           </div>
+        )}
+
+        {/* B5: Show AIErrorMessage when a stream error occurs */}
+        {lastAiError && !isAiThinking && (
+          <AIErrorMessage
+            message={lastAiError}
+            onRetry={() => {
+              clearAiError()
+              // Re-send the last user message
+              const lastUserMsg = [...messages].reverse().find((m) => m.role === 'user')
+              if (lastUserMsg) sendMessage(lastUserMsg.content)
+            }}
+            onSkip={() => {
+              clearAiError()
+              const next = getNextSection(documentType, currentSection)
+              if (next) navigateToSection(next)
+            }}
+          />
         )}
 
         <div ref={messagesEndRef} />

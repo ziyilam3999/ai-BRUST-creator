@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { useGuidedCreatorStore } from '@/stores/guided-creator-store'
 import { useGuidedChat } from '@/hooks/use-guided-chat'
 import { ConversationPanel } from './conversation-panel'
@@ -8,6 +9,7 @@ import { DocumentPanel } from './document-panel'
 import { GuidedErrorBoundary } from './guided-error-boundary'
 import { Button } from '@/components/ui/button'
 import { Save, X, Loader2 } from 'lucide-react'
+import { startAutoSave, stopAutoSave, checkForUnsavedDraft, clearDraft } from '@/lib/guided/auto-save'
 
 interface Props {
   documentType: 'business_rule' | 'user_story'
@@ -23,6 +25,7 @@ const TYPE_LABELS = {
 export function GuidedCreatorContainer({ documentType, onClose, onSave }: Props) {
   const {
     initSession,
+    restoreFromAutoSave,
     overallCompletion,
     canSaveDraft,
     publishSuggestion,
@@ -32,6 +35,32 @@ export function GuidedCreatorContainer({ documentType, onClose, onSave }: Props)
   const [isSaving, setIsSaving] = useState(false)
   // Track last completion that triggered suggestion to avoid re-firing on each render
   const suggestionFiredAt = useRef<number | null>(null)
+
+  useEffect(() => {
+    // B2: Check for unsaved draft on mount — show Sonner toast with recovery option
+    const draft = checkForUnsavedDraft()
+    if (draft) {
+      const savedDate = new Date(draft.savedAt)
+      const timeStr = savedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      toast('Unsaved draft found', {
+        description: `Draft from ${timeStr} — resume where you left off?`,
+        action: {
+          label: 'Resume',
+          onClick: () => {
+            restoreFromAutoSave(draft.state)
+            clearDraft()
+          },
+        },
+        cancel: { label: 'Dismiss', onClick: clearDraft },
+        duration: 10_000,
+      })
+    }
+
+    // B2: Start auto-save loop; stop it on unmount
+    startAutoSave(() => useGuidedCreatorStore.getState())
+    return () => stopAutoSave()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     initSession(documentType)

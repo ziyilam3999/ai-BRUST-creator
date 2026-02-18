@@ -52,6 +52,10 @@ const mockStoreState = {
   dismissPublishSuggestion: vi.fn(),
   setRemindLater: vi.fn(),
   setPublished: vi.fn(),
+  restoreFromAutoSave: vi.fn(),
+  lastAiError: null,
+  setAiError: vi.fn(),
+  clearAiError: vi.fn(),
 }
 
 vi.mock('@/stores/guided-creator-store', () => ({

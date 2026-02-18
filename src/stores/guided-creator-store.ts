@@ -166,6 +166,9 @@ export interface GuidedCreatorState {
   // Publish suggestion state (Plan §13.5)
   publishSuggestion: PublishSuggestionState
 
+  // AI stream error state (Plan §B5)
+  lastAiError: string | null
+
   // Actions
   initSession: (docType: 'business_rule' | 'user_story') => void
   resumeSession: (documentId: string) => void
@@ -179,6 +182,8 @@ export interface GuidedCreatorState {
   summarizeConversation: () => Promise<void>
   setDocumentStatus: (status: 'draft' | 'complete') => void
   setAiThinking: (thinking: boolean) => void
+  setAiError: (error: string | null) => void
+  clearAiError: () => void
   reset: () => void
 
   // Conversion actions
@@ -201,6 +206,9 @@ export interface GuidedCreatorState {
   dismissPublishSuggestion: () => void
   setRemindLater: (remindAt: string) => void
   setPublished: (url: string) => void
+
+  // Auto-save recovery action (Plan §B2)
+  restoreFromAutoSave: (snapshot: Record<string, unknown>) => void
 }
 
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
@@ -236,6 +244,7 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
       sessionStartedAt: new Date().toISOString(),
       conversion: INITIAL_CONVERSION_STATE,
       publishSuggestion: INITIAL_PUBLISH_STATE,
+      lastAiError: null,
 
       // Actions
       initSession: (docType) => {
@@ -376,6 +385,10 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
         })
       },
 
+      // B5: AI stream error tracking
+      setAiError: (error) => set({ lastAiError: error }),
+      clearAiError: () => set({ lastAiError: null }),
+
       reset: () => {
         set({
           documentType: 'business_rule',
@@ -396,6 +409,7 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
           sessionStartedAt: new Date().toISOString(),
           conversion: INITIAL_CONVERSION_STATE,
           publishSuggestion: INITIAL_PUBLISH_STATE,
+          lastAiError: null,
         })
       },
 
@@ -545,6 +559,18 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
             publishedUrl: url,
           },
         }))
+      },
+
+      // B2: Restore state from auto-save snapshot (shallow merge of serialisable fields)
+      restoreFromAutoSave: (snapshot) => {
+        const allowed = ['documentType', 'documentId', 'documentStatus', 'sections',
+          'currentSection', 'messages', 'conversationSummary', 'overallCompletion',
+          'sourceBusinessRuleId', 'sourceBusinessRuleName', 'publishSuggestion'] as const
+        const patch: Record<string, unknown> = {}
+        for (const key of allowed) {
+          if (key in snapshot) patch[key] = snapshot[key]
+        }
+        set(patch as Partial<GuidedCreatorState>)
       },
 
       addManualStory: () => {

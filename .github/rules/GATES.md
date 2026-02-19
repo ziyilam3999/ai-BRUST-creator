@@ -1,6 +1,6 @@
 # Gate Specifications
 <!-- Referenced from: copilot-instructions.md -->
-<!-- Version: 8.3.0 -->
+<!-- Version: 8.4.0 -->
 <!-- Note: Absorbs content from FAST_PATH.md (deleted in v6.0) and CHECKLISTS.md (deleted in v5.x) -->
 <!-- Advanced/optional practices planned for future version -->
 
@@ -149,7 +149,7 @@ Turn 2 is a follow-up+shift: references prior VERIFY findings, uses SHIFT suffix
 
 ### OPEN Self-Check (Before Writing OPEN Line)
 
-Before writing the OPEN line, perform this 4-point check:
+Before writing the OPEN line, perform this 5-point check:
 1. **Mode:** Scan prompt for FIRST keyword match per Decision Tree.
    Match found? → Use matched Mode. No match? → PLAN (default).
    If follow-up + mode change: append `| SHIFT from [OLD_MODE]`.
@@ -159,6 +159,7 @@ Before writing the OPEN line, perform this 4-point check:
    Follow-up? → CTX omitted. Check: docs list matches actual tool calls (no phantoms).
 4. **Suffix:** First response → no suffix. Follow-up (same task) → `| follow-up`.
    Mode shift → `| SHIFT from [MODE]`. Turn 8+ → `| T[N]`. Turn 10+ → `| session:long`.
+5. **LP Bootstrap:** Turn 1 of a session? → Load `tmp/learn-persist.md`. N entries within last 7 days → append `| LP:[N]` to OPEN line. No file or no recent entries → skip silently.
 
 **Suffix Enforcement (hard rule):**
 A response is `follow-up` when the conversation contains ≥1 prior assistant message addressing the same task. Detection is mechanical: scan conversation for a prior OPEN line. Present → append `| follow-up`. Absent → no suffix. Do not use `follow-up` and `SHIFT` in the same OPEN line — if task changes, it is a SHIFT, not a follow-up. Cap: a single OPEN line has at most 2 suffixes (e.g., `| follow-up | T8`).
@@ -174,6 +175,7 @@ If any check fails, fix before outputting OPEN.
 | Missing shift suffix | mode change without suffix | `\| SHIFT from VERIFY` |
 | QCS risk-path confusion | "fix typo in auth.ts" at QCS:2 (risk: auth) | "fix typo in auth.ts" → QCS:0 (task is typo fix, not auth change) |
 | CTX phantom/omission | `ctx:[api.ts, auth.ts]` (only read api.ts) | `ctx:[api.ts]` (matches actual tool calls) |
+| LP suffix missing | `OPEN: IMPLEMENT \| QCS:2 \| task` (Turn 1, 3 recent LP entries) | `OPEN: IMPLEMENT \| QCS:2 \| task \| LP:3` |
 
 ### Mode-Selection Decision Tree (scan prompt for FIRST match)
 
@@ -322,11 +324,12 @@ If any check fails, fix before outputting THINK.
 
 **Trigger:** Before any code changes. IMPLEMENT and VERIFY (if fixes) modes.
 
-**Format (3-6 lines):**
+**Format (3-7 lines):**
 ```
 GO:
 - Plan: [1-line summary of what you'll do]
 - Files: [N] modify, [N] create
+- Plan File: [path to tmp/<task-slug>-plan.md, or N/A — QCS<3]
 - Test-first: [Y / N — reason / skip: trivial]
 - Assumptions: [scan: library? pattern? naming? scope? gaps?] → [specific items, or "None — fully specified"]
 - Reply to confirm, "modify" to change, "cancel" to stop
@@ -367,7 +370,7 @@ Standard practices named in the prompt are not scope concerns UNLESS the specifi
 **Assumptions quality:** `None` when choices were made = score 2. List specific choices = score 3.
 
 **Self-Check (Before Writing GO Block, QCS 2+):**
-Before writing any GO block at QCS 2+, perform this 5-point check:
+Before writing any GO block at QCS 2+, perform this 6-point check:
 1. **Plan-TDD prefix:** If Test-first: Y, does Plan begin with "Step 1: Run baseline tests. Step 2: Write failing test..."?
    If no → fix before outputting.
 2. **Assumptions scan:** Run the 6-item checklist above. Count results. If count > 0 but you wrote "None" → list them.
@@ -376,8 +379,11 @@ Before writing any GO block at QCS 2+, perform this 5-point check:
    If no → add before outputting.
 4. **Assumption count (QCS 2+):** Count listed assumptions. If checklist (item 2) yielded > 0 items, verify ≥ 2 specific assumptions listed. If count < 2 → add specific items from checklist results.
 5. **Numbered steps (advisory):** Are Plan implementation steps explicitly numbered? Numbered steps create a reference list that SHIP Traced can mechanically confirm. Unnumbered plans cause Traced count mismatches at SHIP time.
+6. **Plan File (QCS 3+ multi-phase only):** Is `Plan File:` field present pointing to `tmp/<task-slug>-plan.md`? Was the plan file actually created before this GO block?
+   If QCS < 3 or single-phase → write `N/A — QCS<3` and skip.
+   If QCS 3+ multi-phase → verify file exists, fix before outputting.
 
-If any check (1-4) fails, fix before outputting GO. Item 5 is advisory — unnumbered plans are not blocking but degrade SHIP traceability.
+If any check (1-4) fails, fix before outputting GO. Items 5-6: item 5 is advisory; item 6 is hard-enforced at QCS 3+ multi-phase (write `N/A — QCS<3` otherwise).
 
 ### Common GO Errors (self-check prevents these)
 

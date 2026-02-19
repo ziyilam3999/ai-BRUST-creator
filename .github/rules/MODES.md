@@ -1,6 +1,6 @@
 # Mode Workflows
 <!-- Referenced from: copilot-instructions.md -->
-<!-- Version: 7.11.0 -->
+<!-- Version: 7.12.0 -->
 <!-- Note: Replaces SCENARIOS.md (v5 had 7 scenarios A-G, v6 has 4 modes) -->
 
 ## Overview
@@ -56,7 +56,7 @@ Common transitions:
 | 2 | Read `code-map.md`, `decisions.md` | Existing state understood |
 | 3 | THINK gate (if QCS >= 2) | Analysis with Evidence + Approach |
 | 4 | Draft plan with "Why" for each step | Execution plan |
-| 5 | Self-critique: deflate estimates, check ROI, flag near-ceiling targets | Revised plan |
+| 5 | Self-critique checklist — apply before presenting: (a) deflate estimates (empirically measured, not assumed?); (b) check ROI, flag near-ceiling targets; (c) is every mechanism the plan depends on **physically enforceable** — not just described? (separate files not file sections; gate checklist not prose instruction; tool-call constraint not behavioral suggestion) <!-- v10.12.0 addition --> | Revised plan |
 | 6 | Ask clarifying questions | Ambiguity resolved |
 | 7 | Present final proposal | User-ready plan |
 | 8 | LEARN gate | Task outcome + insight |
@@ -96,6 +96,7 @@ Each command retains its unique behavior via overrides:
 |------|--------|--------|
 | 1 | OPEN gate | Context loaded |
 | 2 | THINK gate (if QCS >= 2) | Evidence + Approach |
+| 2b | Write plan file to `tmp/<task-slug>-plan.md` (QCS 3+ multi-phase only) | Plan file created |
 | 3 | GO gate | User confirmation |
 | 4 | Test-first (default) | Failing tests created |
 | 5 | Implement code | Feature/fix/refactor done |
@@ -136,7 +137,7 @@ The baseline run serves double duty:
 
 ### TDD Sequencing Rule
 
-See [GATES.md §TDD Workflow Template](GATES.md) for the authoritative TDD sequencing steps (Baseline → Write test → RED CHECK → Implement → GREEN).
+See [GATES.md §TDD Workflow Template](GATES.md) for the authoritative TDD sequencing steps (Baseline → Write test → RED CHECK → Implement → GREEN). TDD is enforced mechanically by the **First-Command Rule (TP-1)** — the FIRST tool call after GO must be `run_in_terminal` (baseline test run). Any `create_file` or `edit_file` call before that baseline caps the TEST gate at 2. <!-- v10.12.0 addition -->
 
 **Escape hatches:**
 - User says "quick mode" → TDD waived (Test-first: N)
@@ -158,6 +159,9 @@ At QCS 0-1: skip (overhead exceeds value for micro-tasks).
 
 **Checkpoint Discipline Rule (hard-enforced, IMPLEMENT mode):**
 At session turn T4+: if task has ≥2 remaining steps AND no checkpoint file (`tmp/checkpoint-*.md`) written in this session → write checkpoint BEFORE next implementation action. Violation: CE Checkpoint Discipline capped at 2.
+
+**Plan-File Rule (hard-enforced, IMPLEMENT mode, QCS 3+ multi-phase):**
+Before writing the GO block for any QCS 3+ multi-phase task: create `tmp/<task-slug>-plan.md` with the implementation plan. Reference it in the `Plan File:` field of the GO block. Single-phase tasks or QCS < 3: write `N/A — QCS<3` in the Plan File field and skip file creation. See GATES.md §GO Gate for full field specification.
 
 ### Pre-Implementation Checklist (Multi-Phase Projects)
 

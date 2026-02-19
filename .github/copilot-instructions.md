@@ -1,4 +1,4 @@
-<!-- copilot-instructions v10.11.0 | Last updated: 2026-02-18 -->
+<!-- copilot-instructions v10.13.0 | Last updated: 2026-02-20 -->
 <!-- MODULAR VERSION: Core protocol + pointers to .github/rules/*.md -->
 
 # QUICK START (4 RULES)
@@ -265,7 +265,17 @@ These files are excluded via `.git/info/exclude`:
 
 **Sync:** Run `node tools/sync/index.mjs` to sync across all repos.
 
-**CRITICAL:** Sync script MUST be run from `ai-protocol` repo (contains `sync_config.yaml`).
+**Sync Quick Reference:**
+
+| Fact | Detail |
+|------|--------|
+| **Invocation** | `node tools/sync/index.mjs` — from **any repo** |
+| **Config** | Finds `sync_config.yaml` automatically: env var `AI_PROTOCOL_REPO` → `~/coding_projects/ai-protocol/sync_config.yaml` |
+| **Strategy** | **Newest-wins** — compares timestamps across all repos, promotes most recent version everywhere |
+| **No pre-staging** | Never manually copy files between repos before syncing — script handles it |
+| **What syncs** | `.github/copilot-instructions.md`, `.github/rules/*`, `.claude/commands/*`, `.claude/skills/*`, `tools/sync/*`; auto-generates `CLAUDE.md` |
+| **Flags** | `--dry-run` (preview only), `--skip-tests` (skip test file sync) |
+| **CLAUDE.md** | Auto-generated from copilot-instructions.md — never edit directly |
 
 ---
 

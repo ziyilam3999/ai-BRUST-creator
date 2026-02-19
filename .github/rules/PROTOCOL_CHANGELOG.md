@@ -7,6 +7,70 @@
 
 ---
 
+## [v10.13.0] - 2026-02-20
+
+### LP Bootstrap + Plan-File Rule
+
+**Driver:** [2026-02-19] PROCESS entries in learn-persist.md — plan-file-first pattern effectiveness. Changes derived via full 2-round critique pipeline with blocker resolution (B1: PROTOCOL_LITE.md unreachable at QCS 0-1; B2: rubric contradiction when score 3 not updated atomically).
+
+#### GATES.md (8.3.0 → 8.4.0)
+- OPEN self-check: 4-point → 5-point check; item 5 = LP Bootstrap (load learn-persist.md Turn 1, append `| LP:[N]` suffix)
+- Common OPEN Errors: add "LP suffix missing" row
+- GO gate format: 3-6 lines → 3-7 lines; add `Plan File:` field after `Files:` field
+- GO self-check: 5-point → 6-point check; item 6 = Plan File at QCS 3+ multi-phase (hard-enforced; `N/A — QCS<3` if not applicable)
+
+#### PROTOCOL_LITE.md
+- Add LP Bootstrap trigger after OPEN gate `Follow-up:` line
+- Fixes B1: QCS 0-1 sessions (SIM-50) load PROTOCOL_LITE.md only — GATES.md item 5 was architecturally unreachable without this patch
+
+#### SIMULATION_PLAN.md §6.3 (6.2.0 → 6.3.0)
+- Score 1 row: add "OR at QCS 3+ multi-phase Plan File field absent" clause
+- Score 3 row: add Plan File requirement (`tmp/<task-slug>-plan.md` at QCS 3+, or `N/A — QCS<3` stated explicitly)
+- Both rows updated atomically — fixes B2 rubric contradiction (score 1 and score 3 must be consistent)
+
+#### MODES.md (7.11.0 → 7.12.0)
+- Generic IMPLEMENT Workflow table: add step 2b "Write plan file" (QCS 3+ multi-phase only)
+- Add Plan-File Rule section after Checkpoint Discipline Rule (hard-enforced cross-reference to GATES.md §GO Gate)
+
+#### EXAMPLES.md
+- Add Example T: QCS 3 multi-phase showing plan-file creation before GO block with `Plan File:` field; score 3 vs score 1 contrast
+
+**Projected gain:** +0.15pp gate (83.18% → ~83.33%); CE Δ ~−0.06pp net.
+
+---
+
+## [v10.12.0] - 2026-02-19
+
+### Propagate Multi-Round Critique & Harden Protocol Rules
+
+**Driver:** [2026-02-18] PROCESS entries in learn-persist.md — TDD violations and multi-round critique effectiveness. Changes derived via 2-round independent critique pipeline (R1: strategic, R2: tactical) which itself validated the approach.
+
+#### MODES.md — PLAN Step 5: Structured self-critique checklist
+- Replaced prose "Self-critique: deflate estimates, check ROI" with 3-item enforcement checklist
+- New meta-item: *physically enforceable* check — catches unenforced mechanisms before plan is presented
+- Scope: PLAN mode Step 5 only (not THINK gate — avoids contaminating IMPLEMENT-mode THINK)
+
+#### MODES.md — TDD Sequencing Rule: TP-1 cross-reference
+- Extended existing GATES.md link to also cite First-Command Rule (TP-1) with mechanical consequence
+- Closes discoverability gap that caused [2026-02-18] TDD violations
+
+#### improve-protocol.md — Step 3A: Machine-readable Phase Verdict Table
+- Added required `Phase | Verdict | Rationale` table at end of `critique-round2.md` output spec
+- Step 3B now reads this table only — not prose — making 3A→3B handoff deterministic and `/simulate`-verifiable
+- Prevents 3B from hallucinating verdicts when 3A produces narrative critique
+
+#### improve-protocol.md — Step 1: PROCESS entries triage subagent
+- Added dispatched subagent to sweep `tmp/learn-persist.md` at start of every `/improve-protocol` run
+- Surfaces un-propagated PROCESS entries as plan candidates
+- Propagation-status convention: `[propagated → {file} §{section}]` prevents re-triaging actioned entries
+
+#### improve-protocol.md — Step 6: Finalization Checklist
+- Added explicit 4-item checklist (version bump, changelog, propagation markers, sync) before numbered steps
+- Prevents finalization tasks being forgotten — previously relied on memory; now enforced as a visible gate
+- Checklist scoped to `/improve-protocol` Step 6 only (not SHIP gate — items are command-specific, not general)
+
+---
+
 ## [v10.11.0 — ROADMAP CLOSED] - 2026-02-18
 
 ### Roadmap Closure — Protocol Evolution Complete

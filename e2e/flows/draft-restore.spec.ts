@@ -9,7 +9,7 @@
  *   4. Keyboard Ctrl+Z / Ctrl+Y shortcuts fire without error
  */
 import { test, expect } from '@playwright/test'
-import { useApiMocks, useApiMocksWithDraft } from '../fixtures/api-mocks'
+import { useApiMocks } from '../fixtures/api-mocks'
 
 test.describe('Draft Auto-Save (D3) — No Existing Draft', () => {
   test.beforeEach(async ({ page }) => {
@@ -43,8 +43,10 @@ test.describe('Draft Auto-Save (D3) — No Existing Draft', () => {
     ).toBeVisible({ timeout: 10000 })
 
     // Auto-save fires on a timer — wait up to 5s for at least one POST
+    // NOTE: waitForFunction(fn, arg, options) — pass undefined as arg, options third
     await page.waitForFunction(
       () => (window as unknown as Record<string, unknown>).__draftSaved === true,
+      undefined,
       { timeout: 5000 }
     ).catch(() => {
       // Timer hasn't fired yet — acceptable; just verify no crash
@@ -57,33 +59,61 @@ test.describe('Draft Auto-Save (D3) — No Existing Draft', () => {
 
 test.describe('Draft Auto-Save (D3) — Existing Draft Restore', () => {
   test.beforeEach(async ({ page }) => {
-    await useApiMocksWithDraft(page)
+    // Use base mocks only — localStorage injection is handled by loadPageWithDraft
+    await useApiMocks(page)
   })
 
-  test('restore toast appears when a draft exists on load', async ({ page }) => {
+  // Helper: navigate-away-and-back to guarantee GuidedCreatorContainer remounts.
+  // localStorage persists within the same browser context (same origin), so the
+  // entry set after the first visit is present when the component mounts on the
+  // second visit and fires the "Unsaved draft found" Sonner toast.
+  async function loadPageWithDraft(page: import('@playwright/test').Page) {
+    // Navigate to guided creator (no draft in localStorage yet)
     await page.goto('/business-rule/guided/new')
+    await expect(page.getByRole('heading', { name: /Business Rule/i })).toBeVisible({ timeout: 10000 })
 
-    // After session check, restore prompt or toast should be shown
-    // The container calls checkForUnsavedDraft and shows a toast with Restore/Dismiss
+    // Inject draft entry into localStorage (persists across same-origin navigations)
+    await page.evaluate(() => {
+      const entry = {
+        state: { documentType: 'business_rule', sections: {}, conversationHistory: [] },
+        savedAt: Date.now() - 5 * 60 * 1000, // 5 min ago — valid, within 7-day TTL
+      }
+      localStorage.setItem('guided-creator-autosave', JSON.stringify(entry))
+    })
+
+    // Navigate to root (different URL) so GuidedCreatorContainer unmounts
+    await page.goto('/')
+
+    // Navigate back — component mounts fresh, checkForUnsavedDraft() finds the entry,
+    // and fires the toast. NOTE: <Toaster> must be placed BEFORE {children} in the
+    // layout so it subscribes to Sonner's store before this useEffect fires.
+    await page.goto('/business-rule/guided/new')
+    await expect(page.getByRole('heading', { name: /Business Rule/i })).toBeVisible({ timeout: 10000 })
+  }
+
+  test('restore toast appears when a draft exists on load', async ({ page }) => {
+    await loadPageWithDraft(page)
+
+    // GuidedCreatorContainer calls checkForUnsavedDraft on mount and shows Sonner toast
     await expect(
-      page.getByText(/unsaved draft|restore/i).first()
+      page.getByText(/unsaved draft/i).first()
     ).toBeVisible({ timeout: 10000 })
   })
 
   test('dismissing the restore toast leaves the page functional', async ({ page }) => {
-    await page.goto('/business-rule/guided/new')
+    await loadPageWithDraft(page)
 
-    // Wait for restore prompt
-    const restorePrompt = page.getByText(/unsaved draft|restore/i).first()
+    // Wait for restore toast
+    const restorePrompt = page.getByText(/unsaved draft/i).first()
     await expect(restorePrompt).toBeVisible({ timeout: 10000 })
 
-    // Click Dismiss / Cancel
-    const dismissBtn = page.getByRole('button', { name: /dismiss|no thanks/i }).first()
+    // Click Dismiss / Cancel button on the toast
+    const dismissBtn = page.getByRole('button', { name: /dismiss/i }).first()
     if (await dismissBtn.isVisible()) {
       await dismissBtn.click()
     }
 
-    // Page should still be functional
+    // Page should still be functional after dismissal
     await expect(
       page.getByRole('heading', { name: /Business Rule/i })
     ).toBeVisible({ timeout: 5000 })

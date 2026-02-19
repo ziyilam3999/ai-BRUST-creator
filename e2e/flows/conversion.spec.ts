@@ -62,8 +62,8 @@ test.describe('BR-to-US Conversion Flow', () => {
     await page.getByText(/Generate \d+ User/).click()
     await page.waitForSelector('text=Source Business Rule', { timeout: 15000 })
 
-    // Click edit on first story
-    const editButtons = page.getByRole('button', { name: /edit/i })
+    // Click edit on first story (use exact match to avoid matching disabled "Edit (Coming Soon)" button)
+    const editButtons = page.getByRole('button', { name: /^Edit$/i })
     await editButtons.first().click()
 
     // Editor modal should open

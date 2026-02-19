@@ -122,7 +122,7 @@ describe('Confluence Publishing API', () => {
               cloudId: 'cloud-123',
               accessToken: 'encrypted-token',
               refreshToken: 'encrypted-refresh',
-              expiresAt: new Date(Date.now() + 3600000),
+              tokenExpiresAt: new Date(Date.now() + 3600000).toISOString(),
             }]),
           }),
         } as never)
@@ -159,7 +159,7 @@ describe('Confluence Publishing API', () => {
               cloudId: 'cloud-123',
               accessToken: 'encrypted-token',
               refreshToken: 'encrypted-refresh',
-              expiresAt: new Date(Date.now() + 3600000),
+              tokenExpiresAt: new Date(Date.now() + 3600000).toISOString(),
             }]),
           }),
         } as never)
@@ -231,7 +231,7 @@ describe('Confluence Publishing API', () => {
               cloudId: 'cloud-123',
               accessToken: 'encrypted-token',
               refreshToken: 'encrypted-refresh',
-              expiresAt: new Date(Date.now() + 3600000),
+              tokenExpiresAt: new Date(Date.now() + 3600000).toISOString(),
             }]),
           }),
         } as never)
@@ -260,8 +260,8 @@ describe('Confluence Publishing API', () => {
           from: vi.fn().mockReturnValue({
             where: vi.fn().mockResolvedValue([{
               id: 'publish-1',
-              externalId: 'page-123',
-              externalUrl: 'https://mysite.atlassian.net/wiki/spaces/BRUST/pages/page-123',
+              targetId: 'page-123',
+              targetUrl: 'https://mysite.atlassian.net/wiki/spaces/BRUST/pages/page-123',
             }]),
           }),
         } as never)
@@ -314,7 +314,7 @@ describe('Confluence Publishing API', () => {
               cloudId: 'cloud-123',
               accessToken: 'encrypted-token',
               refreshToken: 'encrypted-refresh',
-              expiresAt: new Date(Date.now() - 1000), // Expired
+              tokenExpiresAt: new Date(Date.now() - 1000).toISOString(), // Expired
             }]),
           }),
         } as never)

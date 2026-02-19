@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       await db
         .update(documents)
         .set({
-          content: content as Parameters<(typeof documents)['$inferInsert']['content']>[0],
+          content: content as Record<string, unknown>,
           documentType: (documentType as 'business_rule' | 'user_story') ?? 'business_rule',
           updatedAt: now,
         })
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
         documentType: (documentType as 'business_rule' | 'user_story') ?? 'business_rule',
         documentId: DRAFT_DOCUMENT_ID,
         title: 'Auto-save draft',
-        content: content as Parameters<(typeof documents)['$inferInsert']['content']>[0],
+        content: content as Record<string, unknown>,
         status: 'draft',
         updatedAt: now,
       })

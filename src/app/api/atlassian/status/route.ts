@@ -27,7 +27,9 @@ export async function GET() {
 
     const connection = connections[0]
     const now = new Date()
-    const needsRefresh = connection.expiresAt ? connection.expiresAt < now : false
+    const needsRefresh = connection.tokenExpiresAt
+      ? new Date(connection.tokenExpiresAt) < now
+      : false
 
     return NextResponse.json({
       connected: true,

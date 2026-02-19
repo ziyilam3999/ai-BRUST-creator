@@ -50,6 +50,8 @@ export const atlassianConnections = sqliteTable('atlassian_connections', {
     .references(() => users.id)
     .unique(),
   cloudId: text('cloud_id').notNull(),
+  siteName: text('site_name'),
+  siteUrl: text('site_url'),
   accessToken: text('access_token').notNull(), // Encrypted in production
   refreshToken: text('refresh_token').notNull(), // Encrypted in production
   tokenExpiresAt: text('token_expires_at'),

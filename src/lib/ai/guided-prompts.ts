@@ -287,8 +287,8 @@ export function getSectionInitialPrompt(
   docType: 'business_rule' | 'user_story',
   section: string
 ): string {
-  const sectionPrompts = SECTION_PROMPTS[docType]?.[section as keyof typeof SECTION_PROMPTS.business_rule]
-  return sectionPrompts?.initial ?? `Let's work on the ${section} section.`
+  const prompts = SECTION_PROMPTS[docType] as Record<string, { initial: string; followUp: (input: string) => string } | undefined>
+  return prompts?.[section]?.initial ?? `Let's work on the ${section} section.`
 }
 
 /**
@@ -299,9 +299,9 @@ export function getSectionFollowUpPrompt(
   section: string,
   userInput: string
 ): string {
-  const sectionPrompts = SECTION_PROMPTS[docType]?.[section as keyof typeof SECTION_PROMPTS.business_rule]
-  if (sectionPrompts?.followUp) {
-    return sectionPrompts.followUp(userInput)
+  const prompts = SECTION_PROMPTS[docType] as Record<string, { initial: string; followUp: (input: string) => string } | undefined>
+  if (prompts?.[section]?.followUp) {
+    return prompts[section]!.followUp(userInput)
   }
   return `Processing your input for ${section}...`
 }

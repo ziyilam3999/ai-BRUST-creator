@@ -7,7 +7,7 @@ const mockEditSection = vi.fn()
 const mockNavigateToSection = vi.fn()
 
 const mockStoreState = {
-  documentType: 'business_rule' as const,
+  documentType: 'business_rule' as ('business_rule' | 'user_story'),
   documentId: null,
   documentStatus: 'draft' as const,
   sections: {
@@ -17,8 +17,12 @@ const mockStoreState = {
     exceptions: { status: 'not_started' as const, completionPercent: 0, content: {}, lastUpdated: null, aiDraft: null, userAccepted: false },
     examples: { status: 'not_started' as const, completionPercent: 0, content: {}, lastUpdated: null, aiDraft: null, userAccepted: false },
     metadata: { status: 'not_started' as const, completionPercent: 0, content: {}, lastUpdated: null, aiDraft: null, userAccepted: false },
+    storyStatement: { status: 'not_started' as const, completionPercent: 0, content: {}, lastUpdated: null, aiDraft: null, userAccepted: false },
+    acceptanceCriteria: { status: 'not_started' as const, completionPercent: 0, content: {}, lastUpdated: null, aiDraft: null, userAccepted: false },
+    definitionOfDone: { status: 'not_started' as const, completionPercent: 0, content: {}, lastUpdated: null, aiDraft: null, userAccepted: false },
+    relatedItems: { status: 'not_started' as const, completionPercent: 0, content: {}, lastUpdated: null, aiDraft: null, userAccepted: false },
   },
-  currentSection: 'basicInfo' as const,
+  currentSection: 'basicInfo' as string,
   messages: [] as Array<{
     id: string
     role: 'ai' | 'user' | 'system'

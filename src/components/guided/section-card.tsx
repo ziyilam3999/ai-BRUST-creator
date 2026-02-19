@@ -279,28 +279,32 @@ function SectionDisplay({ section, content }: { section: string; content: Record
   }
 
   switch (section) {
-    case 'ruleStatement':
+    case 'ruleStatement': {
+      const c = content as { if?: string; then?: string; else?: string }
       return (
         <div className="space-y-2 text-sm" role="region" aria-label="Rule Statement">
-          {content.if && (
-            <div><span className="font-semibold text-blue-600">IF:</span> {content.if as string}</div>
+          {c.if && (
+            <div><span className="font-semibold text-blue-600">IF:</span> {c.if}</div>
           )}
-          {content.then && (
-            <div><span className="font-semibold text-green-600">THEN:</span> {content.then as string}</div>
+          {c.then && (
+            <div><span className="font-semibold text-green-600">THEN:</span> {c.then}</div>
           )}
-          {content.else && (
-            <div><span className="font-semibold text-orange-600">ELSE:</span> {content.else as string}</div>
+          {c.else && (
+            <div><span className="font-semibold text-orange-600">ELSE:</span> {c.else}</div>
           )}
         </div>
       )
-    case 'storyStatement':
+    }
+    case 'storyStatement': {
+      const c = content as { asA?: string; iWant?: string; soThat?: string }
       return (
         <div className="space-y-1 text-sm">
-          {content.asA && <div><span className="font-semibold">As a</span> {content.asA as string}</div>}
-          {content.iWant && <div><span className="font-semibold">I want</span> {content.iWant as string}</div>}
-          {content.soThat && <div><span className="font-semibold">So that</span> {content.soThat as string}</div>}
+          {c.asA && <div><span className="font-semibold">As a</span> {c.asA}</div>}
+          {c.iWant && <div><span className="font-semibold">I want</span> {c.iWant}</div>}
+          {c.soThat && <div><span className="font-semibold">So that</span> {c.soThat}</div>}
         </div>
       )
+    }
     case 'exceptions':
     case 'examples':
     case 'acceptanceCriteria':

@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     let accessToken = decryptToken(connection.accessToken)
     const now = new Date()
 
-    if (connection.expiresAt && connection.expiresAt < now) {
+    if (connection.tokenExpiresAt && new Date(connection.tokenExpiresAt) < now) {
       // Token expired, refresh it
       const refreshToken = decryptToken(connection.refreshToken)
       const newTokens = await refreshAccessToken(refreshToken)
@@ -61,8 +61,8 @@ export async function POST(request: Request) {
         .set({
           accessToken: encryptToken(newTokens.access_token),
           refreshToken: encryptToken(newTokens.refresh_token),
-          expiresAt: newExpiresAt,
-          updatedAt: new Date(),
+          tokenExpiresAt: newExpiresAt.toISOString(),
+          updatedAt: new Date().toISOString(),
         })
         .where(eq(atlassianConnections.id, connection.id))
     }
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     const doc = docs[0]
 
     // Parse document content
-    const brData = JSON.parse(doc.content || '{}')
+    const brData = JSON.parse((doc.content as string) || '{}')
 
     // Convert to Confluence format
     const confluenceContent = businessRuleToConfluenceContent({
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
       .where(
         and(
           eq(publishRecords.documentId, documentId),
-          eq(publishRecords.platform, 'confluence')
+          eq(publishRecords.target, 'confluence')
         )
       )
 
@@ -106,13 +106,13 @@ export async function POST(request: Request) {
     let pageResponse
     let isUpdate = false
 
-    if (existingPublish.length > 0 && existingPublish[0].externalId) {
+    if (existingPublish.length > 0 && existingPublish[0].targetId) {
       // Update existing page
       isUpdate = true
       pageResponse = await updateConfluencePage({
         cloudId: connection.cloudId,
         accessToken,
-        pageId: existingPublish[0].externalId,
+        pageId: existingPublish[0].targetId,
         title: `${brData.ruleId}: ${brData.ruleName}`,
         content: confluenceContent,
       })
@@ -121,8 +121,7 @@ export async function POST(request: Request) {
       await db
         .update(publishRecords)
         .set({
-          publishedAt: new Date(),
-          updatedAt: new Date(),
+          publishedAt: new Date().toISOString(),
         })
         .where(eq(publishRecords.id, existingPublish[0].id))
     } else {
@@ -141,20 +140,18 @@ export async function POST(request: Request) {
         id: crypto.randomUUID(),
         documentId,
         userId: session.user.id,
-        platform: 'confluence',
-        externalId: pageResponse.id,
-        externalUrl: buildPageUrl(pageResponse),
-        publishedAt: new Date(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        target: 'confluence',
+        targetId: pageResponse.id,
+        targetUrl: buildPageUrl(pageResponse),
+        publishedAt: new Date().toISOString(),
       })
 
       // Update document published_at
       await db
         .update(documents)
         .set({
-          publishedAt: new Date(),
-          updatedAt: new Date(),
+          publishedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         })
         .where(eq(documents.id, documentId))
     }

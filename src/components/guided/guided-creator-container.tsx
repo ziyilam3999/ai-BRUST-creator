@@ -59,7 +59,7 @@ export function GuidedCreatorContainer({ documentType, onClose, onSave }: Props)
     }
 
     // B2: Start auto-save loop; stop it on unmount
-    startAutoSave(() => useGuidedCreatorStore.getState())
+    startAutoSave(() => useGuidedCreatorStore.getState() as unknown as Record<string, unknown>)
     return () => stopAutoSave()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

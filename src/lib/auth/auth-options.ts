@@ -23,7 +23,7 @@ export const authOptions: NextAuthOptions = {
           const existingUser = await db
             .select()
             .from(users)
-            .where(eq(users.githubId, String(profile.id)))
+            .where(eq(users.githubId, String((profile as Record<string, unknown>).id)))
             .limit(1)
 
           if (existingUser.length === 0) {
@@ -33,7 +33,7 @@ export const authOptions: NextAuthOptions = {
               email: user.email,
               name: user.name,
               image: user.image,
-              githubId: String(profile.id),
+              githubId: String((profile as Record<string, unknown>).id),
             })
           } else {
             // Update user ID to match existing record

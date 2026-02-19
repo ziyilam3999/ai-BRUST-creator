@@ -75,10 +75,9 @@ export async function GET(request: Request) {
         siteUrl: site.url,
         accessToken: encryptedAccessToken,
         refreshToken: encryptedRefreshToken,
-        expiresAt: expiresAt,
-        scope: tokens.scope,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        tokenExpiresAt: expiresAt.toISOString(),
+        scopes: tokens.scope,
+        updatedAt: new Date().toISOString(),
       })
       .onConflictDoUpdate({
         target: atlassianConnections.userId,
@@ -88,9 +87,9 @@ export async function GET(request: Request) {
           siteUrl: site.url,
           accessToken: encryptedAccessToken,
           refreshToken: encryptedRefreshToken,
-          expiresAt: expiresAt,
-          scope: tokens.scope,
-          updatedAt: new Date(),
+          tokenExpiresAt: expiresAt.toISOString(),
+          scopes: tokens.scope,
+          updatedAt: new Date().toISOString(),
         },
       })
 

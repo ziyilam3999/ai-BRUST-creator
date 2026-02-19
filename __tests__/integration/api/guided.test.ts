@@ -145,7 +145,7 @@ describe('Guided Creation API', () => {
 
       // Verify streamText was called with sanitized input
       const streamTextCall = vi.mocked(streamText).mock.calls[0][0]
-      const lastMessage = streamTextCall.messages[streamTextCall.messages.length - 1]
+      const lastMessage = streamTextCall.messages![streamTextCall.messages!.length - 1]
       expect(lastMessage.content).not.toContain('ignore previous instructions')
     })
 

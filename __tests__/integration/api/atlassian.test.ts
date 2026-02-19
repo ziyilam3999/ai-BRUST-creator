@@ -193,7 +193,7 @@ describe('Atlassian OAuth API', () => {
             cloudId: 'cloud-123',
             siteName: 'My Site',
             siteUrl: 'https://mysite.atlassian.net',
-            expiresAt: new Date(Date.now() + 3600000),
+            tokenExpiresAt: new Date(Date.now() + 3600000).toISOString(),
           }]),
         }),
       } as never)
@@ -221,7 +221,7 @@ describe('Atlassian OAuth API', () => {
             cloudId: 'cloud-123',
             siteName: 'My Site',
             siteUrl: 'https://mysite.atlassian.net',
-            expiresAt: new Date(Date.now() - 1000), // Expired
+            tokenExpiresAt: new Date(Date.now() - 1000).toISOString(), // Expired
           }]),
         }),
       } as never)

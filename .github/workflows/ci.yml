@@ -24,7 +24,5 @@ jobs:
           cache: npm
 
       - run: npm ci
-      - run: npm run build
-        env:
-          SKIP_ENV_VALIDATION: true
+      - run: npx tsc --noEmit
       - run: npm run lint

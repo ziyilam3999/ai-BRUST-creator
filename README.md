@@ -1,5 +1,7 @@
 # BRUST Creator
 
+> **BRUST** = **B**usiness **R**ules & **U**ser **S**tory **T**ool
+
 AI-assisted business rule and user story generator. Transform product requirements into structured, consistent business rules and user stories using Claude AI.
 
 ## Features

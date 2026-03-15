@@ -55,3 +55,12 @@ out/
 
 # Debug
 *.log
+
+# Internal AI development files
+CLAUDE.md
+.claude/
+.github/copilot-instructions.md
+.github/rules/
+.github/self-improve/
+.github/learn-project.md
+tools/legacy/

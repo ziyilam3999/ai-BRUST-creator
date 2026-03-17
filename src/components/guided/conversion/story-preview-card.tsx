@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
-  Check, Pencil, RefreshCw, Trash2,
+  Check, Pencil, Trash2,
   ChevronDown, ChevronUp, MessageSquare,
 } from 'lucide-react'
 import type { GeneratedStory } from '@/stores/guided-creator-store'
+import { renderMarkdown } from '@/lib/render-markdown'
 
 interface Props {
   story: GeneratedStory
@@ -16,7 +17,6 @@ interface Props {
   totalStories: number
   onAccept: () => void
   onEdit: () => void
-  onRegenerate: () => void
   onDelete: () => void
   onChat: () => void
 }
@@ -27,7 +27,6 @@ export function StoryPreviewCard({
   totalStories,
   onAccept,
   onEdit,
-  onRegenerate,
   onDelete,
   onChat,
 }: Props) {
@@ -73,17 +72,13 @@ export function StoryPreviewCard({
               <p className="text-sm font-medium mb-2">
                 Acceptance Criteria ({story.data.acceptanceCriteria.length})
               </p>
-              <ul className="text-sm space-y-1">
-                {story.data.acceptanceCriteria.slice(0, 3).map((ac) => (
-                  <li key={ac.id} className="text-muted-foreground">
-                    • {ac.scenario}
+              <ul className="text-sm space-y-1 max-h-48 overflow-y-auto pr-1">
+                {story.data.acceptanceCriteria.map((ac) => (
+                  <li key={ac.id} className="text-muted-foreground flex gap-1.5">
+                    <span className="shrink-0 mt-0.5">•</span>
+                    <span>{renderMarkdown(ac.scenario)}</span>
                   </li>
                 ))}
-                {story.data.acceptanceCriteria.length > 3 && (
-                  <li className="text-muted-foreground italic">
-                    + {story.data.acceptanceCriteria.length - 3} more...
-                  </li>
-                )}
               </ul>
             </div>
           )}
@@ -103,9 +98,6 @@ export function StoryPreviewCard({
             <Button size="sm" variant="outline" onClick={onChat} aria-label="Refine with AI">
               <MessageSquare className="w-4 h-4 mr-1" />
               Refine with AI
-            </Button>
-            <Button size="sm" variant="ghost" onClick={onRegenerate} aria-label="Regenerate">
-              <RefreshCw className="w-4 h-4" />
             </Button>
             {totalStories > 1 && (
               <Button size="sm" variant="ghost" onClick={onDelete} aria-label="Delete">

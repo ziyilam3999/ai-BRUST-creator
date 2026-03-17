@@ -45,13 +45,18 @@ export async function POST(request: NextRequest) {
 
   try {
     const body: ConvertRequest = await request.json()
-    const { businessRule, options } = body
+    let { businessRule } = body
+    const { options } = body
 
-    if (!businessRule || !businessRule.ruleId) {
+    if (!businessRule || (!businessRule.ruleId && !businessRule.ruleName)) {
       return NextResponse.json(
         { error: { code: 'VALIDATION_ERROR', message: 'Business rule data is required' } },
         { status: 400 }
       )
+    }
+    // Ensure ruleId has a fallback so downstream mappers never receive an empty string
+    if (!businessRule.ruleId) {
+      businessRule = { ...businessRule, ruleId: businessRule.ruleName || 'BR-UNKNOWN' }
     }
 
     // Analyze the BR for splitting
@@ -80,7 +85,10 @@ export async function POST(request: NextRequest) {
     const stories = []
 
     for (let i = 0; i < storyCount; i++) {
-      const story = mapBRtoUS(businessRule, i, storyCount)
+      // Pass the analyzer's per-story proposal so the mapper can produce differentiated content
+      // (distinct title, filtered conditions/exceptions) rather than cloning the full BR each time.
+      const proposed = analysis.proposedStories[i]
+      const story = mapBRtoUS(businessRule, i, storyCount, proposed)
       stories.push(story)
     }
 

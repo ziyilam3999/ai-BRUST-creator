@@ -1,4 +1,5 @@
 export { GuidedCreatorContainer } from './guided-creator-container'
+export { CreationModeTabs } from './creation-mode-tabs'
 export { ConversationPanel } from './conversation-panel'
 export { DocumentPanel } from './document-panel'
 export { SectionCard } from './section-card'

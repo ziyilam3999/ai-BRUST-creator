@@ -8,7 +8,6 @@ interface Props {
   stories: GeneratedStory[]
   onAccept: (storyId: string) => void
   onEdit: (storyId: string) => void
-  onRegenerate: (storyId: string) => void
   onDelete: (storyId: string) => void
   onChat: (storyId: string) => void
 }
@@ -17,7 +16,6 @@ export function StoryPreviewList({
   stories,
   onAccept,
   onEdit,
-  onRegenerate,
   onDelete,
   onChat,
 }: Props) {
@@ -44,7 +42,6 @@ export function StoryPreviewList({
             totalStories={stories.length}
             onAccept={() => onAccept(story.id)}
             onEdit={() => onEdit(story.id)}
-            onRegenerate={() => onRegenerate(story.id)}
             onDelete={() => onDelete(story.id)}
             onChat={() => onChat(story.id)}
           />

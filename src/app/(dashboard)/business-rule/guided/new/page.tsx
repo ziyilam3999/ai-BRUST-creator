@@ -1,4 +1,5 @@
 'use client'
+// Legacy deep-link — primary creation entry is /business-rule/new (mode toggle)
 
 import { useRouter } from 'next/navigation'
 import { GuidedCreatorContainer } from '@/components/guided'

@@ -42,7 +42,7 @@ export function ConversionPrompt({ onConvert, onSkip, brTitle }: Props) {
           </Button>
           <Button variant="outline" onClick={onSkip}>
             <X className="w-4 h-4 mr-2" />
-            No, Just Save BR
+            Maybe Later
           </Button>
         </div>
       </CardContent>

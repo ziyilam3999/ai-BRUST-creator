@@ -2,6 +2,7 @@
 
 import { ConversationMessage } from '@/stores/guided-creator-store'
 import { cn } from '@/lib/utils'
+import { renderMarkdown } from '@/lib/render-markdown'
 
 interface Props {
   message: ConversationMessage
@@ -32,7 +33,7 @@ export function MessageBubble({ message }: Props) {
             : 'bg-primary text-primary-foreground'
         )}
       >
-        {message.content}
+        {isAi ? renderMarkdown(message.content) : message.content}
       </div>
     </div>
   )

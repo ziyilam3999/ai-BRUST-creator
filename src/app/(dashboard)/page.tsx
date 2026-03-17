@@ -65,7 +65,9 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button disabled>Create User Story (Coming Soon)</Button>
+            <Link href="/user-story/new">
+              <Button>Create User Story</Button>
+            </Link>
           </CardContent>
         </Card>
       </div>

@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import type { DocumentSection, SectionState } from '@/stores/guided-creator-store'
 import { useGuidedCreatorStore } from '@/stores/guided-creator-store'
 import { cn } from '@/lib/utils'
+import { renderMarkdown } from '@/lib/render-markdown'
 import { CheckCircle, Circle, Pencil, Save, X } from 'lucide-react'
 
 interface FieldConfig {
@@ -281,17 +282,87 @@ function SectionDisplay({ section, content }: { section: string; content: Record
   switch (section) {
     case 'ruleStatement': {
       const c = content as { if?: string; then?: string; else?: string }
+      if (c.if || c.then || c.else) {
+        return (
+          <div className="space-y-2 text-sm" role="region" aria-label="Rule Statement">
+            {c.if && (
+              <div><span className="font-semibold text-blue-600">IF:</span> {c.if}</div>
+            )}
+            {c.then && (
+              <div><span className="font-semibold text-green-600">THEN:</span> {c.then}</div>
+            )}
+            {c.else && (
+              <div><span className="font-semibold text-orange-600">ELSE:</span> {c.else}</div>
+            )}
+          </div>
+        )
+      }
+      // Fallback: render each top-level key; detect nested condition objects
       return (
         <div className="space-y-2 text-sm" role="region" aria-label="Rule Statement">
-          {c.if && (
-            <div><span className="font-semibold text-blue-600">IF:</span> {c.if}</div>
-          )}
-          {c.then && (
-            <div><span className="font-semibold text-green-600">THEN:</span> {c.then}</div>
-          )}
-          {c.else && (
-            <div><span className="font-semibold text-orange-600">ELSE:</span> {c.else}</div>
-          )}
+          {Object.entries(content).map(([key, value]) => {
+            const label = key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')
+            // Detect object whose values are condition objects (condition1, condition2…)
+            if (
+              value !== null &&
+              typeof value === 'object' &&
+              !Array.isArray(value) &&
+              Object.keys(value as object).some(k => /^condition\d+$/i.test(k))
+            ) {
+              return (
+                <div key={key}>
+                  <span className="font-semibold capitalize">{label}:</span>
+                  <div className="mt-1 space-y-1 pl-3 border-l-2 border-muted">
+                    {Object.entries(value as Record<string, unknown>).map(([ck, cv]) => {
+                      const cond = cv as Record<string, unknown>
+                      return (
+                        <div key={ck} className="text-xs space-y-0.5">
+                          <span className="font-medium capitalize">{ck.replace(/_/g, ' ')}:</span>
+                          {cond.if && <div><span className="text-blue-600 font-semibold">IF</span> {String(cond.if)}</div>}
+                          {cond.then && (
+                            <div><span className="text-green-600 font-semibold">THEN</span>{' '}
+                              {Array.isArray(cond.then) ? (cond.then as string[]).join('; ') : String(cond.then)}
+                            </div>
+                          )}
+                          {cond.else && <div><span className="text-orange-600 font-semibold">ELSE</span> {String(cond.else)}</div>}
+                          {cond.priority && <div className="text-muted-foreground">Priority: {String(cond.priority)}</div>}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            }
+            return (
+              <div key={key}>
+                <span className="font-semibold capitalize">{label}:</span>{' '}
+                {typeof value === 'string'
+                  ? value
+                  : Array.isArray(value)
+                    ? (() => {
+                        const arr = value as unknown[]
+                        if (arr.length === 0) return <span className="text-muted-foreground">None</span>
+                        if (typeof arr[0] !== 'object') return <span>{(arr as string[]).join(', ')}</span>
+                        // Array of objects — render as indented sub-field blocks
+                        return (
+                          <div className="mt-1 pl-3 border-l-2 border-muted space-y-1">
+                            {(arr as Record<string, unknown>[]).map((item, idx) => (
+                              <div key={idx} className="text-xs space-y-0.5">
+                                {Object.entries(item).map(([k, v]) => (
+                                  <div key={k}>
+                                    <span className="font-medium capitalize">{k.replace(/_/g, ' ')}:</span>{' '}
+                                    {Array.isArray(v) ? (v as string[]).join('; ') : String(v)}
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
+                          </div>
+                        )
+                      })()
+                    : JSON.stringify(value)}
+              </div>
+            )
+          })}
         </div>
       )
     }
@@ -309,30 +380,149 @@ function SectionDisplay({ section, content }: { section: string; content: Record
     case 'examples':
     case 'acceptanceCriteria':
     case 'definitionOfDone': {
-      const listKey = Object.keys(content)[0]
-      const items = (content[listKey] as string[]) || []
+      // Find the first array value in content; AI may use any key name
+      let rawItems: unknown[] = []
+      for (const val of Object.values(content)) {
+        if (Array.isArray(val)) {
+          rawItems = val
+          break
+        }
+      }
+      // Escape-hatch: content was captured as { text: "..." } — render as formatted markdown
+      if (rawItems.length === 0 && typeof content.text === 'string') {
+        return (
+          <div className="text-sm">{renderMarkdown(content.text)}</div>
+        )
+      }
+      // If no array found, treat all content values as bullet items
+      if (rawItems.length === 0) {
+        rawItems = Object.entries(content).map(([k, v]) => `${k}: ${typeof v === 'string' ? v : JSON.stringify(v)}`)
+      }
       return (
-        <ul className="list-disc list-inside text-sm space-y-1">
-          {items.map((item, i) => <li key={i}>{item}</li>)}
-          {items.length === 0 && <li className="text-muted-foreground">None defined</li>}
-        </ul>
+        <div className="space-y-2 text-sm">
+          {rawItems.map((item, i) => {
+            if (typeof item === 'string') {
+              return <div key={i} className="flex gap-2"><span className="text-muted-foreground mt-0.5">•</span><span>{item}</span></div>
+            }
+            // Object item — render as a labeled card
+            const obj = item as Record<string, unknown>
+            return (
+              <div key={i} className="pl-3 border-l-2 border-muted space-y-0.5">
+                {Object.entries(obj).map(([k, v]) => (
+                  <div key={k}>
+                    <span className="font-semibold capitalize">{k.replace(/_/g, ' ')}:</span>{' '}
+                    <span>{typeof v === 'string' ? v : Array.isArray(v) ? (v as string[]).join(', ') : JSON.stringify(v)}</span>
+                  </div>
+                ))}
+              </div>
+            )
+          })}
+          {rawItems.length === 0 && <span className="text-muted-foreground">None defined</span>}
+        </div>
       )
     }
     case 'basicInfo':
       return (
-        <div className="grid grid-cols-2 gap-2 text-sm">
+        <div className="space-y-2 text-sm">
           {Object.entries(content).map(([key, value]) => (
             <div key={key}>
-              <span className="text-muted-foreground">{key}:</span> {value as string}
+              <span className="font-semibold capitalize">
+                {key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:
+              </span>{' '}
+              {typeof value === 'string'
+                ? value
+                : typeof value === 'number' || typeof value === 'boolean'
+                  ? String(value)
+                  : Array.isArray(value)
+                    ? (value as unknown[]).map(i => typeof i === 'string' ? i : JSON.stringify(i)).join(', ')
+                    : value !== null && typeof value === 'object'
+                      ? JSON.stringify(value)
+                      : ''}
             </div>
           ))}
         </div>
       )
-    default:
+    case 'description': {
       return (
-        <div className="text-sm">
+        <div className="space-y-2 text-sm">
           {Object.entries(content).map(([key, value]) => (
-            <div key={key}>{typeof value === 'string' ? value : JSON.stringify(value)}</div>
+            <div key={key}>
+              <span className="font-semibold capitalize">
+                {key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:
+              </span>{' '}
+              <span className="text-foreground">
+                {typeof value === 'string'
+                  ? value
+                  : Array.isArray(value)
+                    ? (value as unknown[]).map(i => typeof i === 'string' ? i : JSON.stringify(i)).join(', ')
+                    : value !== null && typeof value === 'object'
+                      ? JSON.stringify(value)
+                      : String(value ?? '')}
+              </span>
+            </div>
+          ))}
+        </div>
+      )
+    }
+    case 'metadata': {
+      // Escape-hatch: captured as { text } blob
+      if (typeof content.text === 'string') {
+        return <div className="text-sm">{renderMarkdown(content.text)}</div>
+      }
+      return (
+        <div className="space-y-3 text-sm">
+          {Object.entries(content).map(([key, value]) => {
+            const label = key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')
+            // Owners / array of objects — render as role cards
+            if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object') {
+              return (
+                <div key={key}>
+                  <span className="font-semibold capitalize">{label}:</span>
+                  <div className="mt-1 space-y-1 pl-3 border-l-2 border-muted">
+                    {(value as Record<string, unknown>[]).map((item, idx) => (
+                      <div key={idx} className="text-xs space-y-0.5">
+                        {Object.entries(item).map(([k, v]) => (
+                          <div key={k}>
+                            <span className="font-medium capitalize">{k.replace(/_/g, ' ')}:</span>{' '}
+                            {typeof v === 'string' ? v : String(v)}
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            }
+            return (
+              <div key={key}>
+                <span className="font-semibold capitalize">{label}:</span>{' '}
+                {typeof value === 'string'
+                  ? value
+                  : Array.isArray(value)
+                    ? (value as string[]).join(', ')
+                    : value !== null && typeof value === 'object'
+                      ? JSON.stringify(value)
+                      : String(value ?? '')}
+              </div>
+            )
+          })}
+        </div>
+      )
+    }
+    default:
+      // Escape-hatch: { text } payload — render with markdown
+      if (typeof content.text === 'string') {
+        return <div className="text-sm">{renderMarkdown(content.text)}</div>
+      }
+      return (
+        <div className="space-y-1 text-sm">
+          {Object.entries(content).map(([key, value]) => (
+            <div key={key}>
+              <span className="font-semibold capitalize">
+                {key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:
+              </span>{' '}
+              <span>{typeof value === 'string' ? value : JSON.stringify(value)}</span>
+            </div>
           ))}
         </div>
       )

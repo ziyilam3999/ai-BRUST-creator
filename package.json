@@ -19,7 +19,8 @@
     "sync": "node tools/sync/index.mjs",
     "sync:init": "node tools/sync/init.mjs",
     "sync:extract": "node tools/sync/extract-docs.mjs",
-    "test:tools": "vitest run --config vitest.config.tools.ts"
+    "test:tools": "vitest run --config vitest.config.tools.ts",
+    "postinstall": "node scripts/install-hooks.js"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^0.0.50",

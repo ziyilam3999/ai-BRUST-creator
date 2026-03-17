@@ -332,10 +332,13 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
                 content: lastDraftMessage.draftContent,
                 userAccepted: true,
                 status: 'draft',
+                completionPercent: 100,
                 lastUpdated: new Date().toISOString(),
               },
             },
           }))
+          // Recalculate overall progress now that this section is accepted
+          get().calculateCompletion()
         }
       },
 
@@ -630,7 +633,16 @@ export const useGuidedCreatorStore = create<GuidedCreatorState>()(
         currentSection: state.currentSection,
         messages: state.messages,
         overallCompletion: state.overallCompletion,
-        conversion: state.conversion,
+        // Persist conversion state but strip transient fields:
+        // - error: transient; persisting it causes stale errors to reappear on reload
+        //   after Zustand rehydrates past the clearing useEffect in Next.js App Router
+        // - in-progress modes: an interrupted analyzing/converting session is
+        //   unrecoverable on reload, so reset them to 'none'
+        conversion: {
+          ...state.conversion,
+          error: null,
+          mode: (state.conversion.mode === 'complete' ? 'complete' : 'none') as ConversionMode,
+        },
         publishSuggestion: state.publishSuggestion,
       }),
     }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { streamText } from 'ai'
+import { generateText } from 'ai'
 import { anthropic } from '@ai-sdk/anthropic'
 import { authOptions } from '@/lib/auth/auth-options'
 import { GUIDED_SYSTEM_PROMPT, SECTION_PROMPTS } from '@/lib/ai/guided-prompts'
@@ -122,14 +122,18 @@ export async function POST(request: NextRequest) {
       { role: 'user' as const, content: sanitizedInput },
     ]
 
-    const result = await streamText({
+    const result = await generateText({
       model: anthropic('claude-sonnet-4-20250514'),
       system: systemPrompt,
       messages,
       maxTokens: 2048,
     })
 
-    return result.toDataStreamResponse()
+    // Return the raw AI text — the client hook reads it with response.text()
+    // and parses it as JSON (the AI is instructed to return structured JSON).
+    return new NextResponse(result.text, {
+      headers: { 'Content-Type': 'application/json' },
+    })
   } catch (error) {
     console.error('Error in guided creation:', error)
     return NextResponse.json(

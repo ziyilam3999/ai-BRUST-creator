@@ -393,13 +393,18 @@ function generateProposedStories(
     const chunkSize = Math.ceil(conditions.length / count)
     for (let i = 0; i < count; i++) {
       const chunk = conditions.slice(i * chunkSize, (i + 1) * chunkSize)
+      // The last story also owns exceptions so they are never orphaned across stories
+      const isLast = i === count - 1
       stories.push({
-        title: `${ruleName} - Part ${i + 1}`,
-        rationale: `Handles conditions: ${chunk.join(', ').slice(0, 50)}...`,
+        title: deriveChunkTitle(ruleName, chunk),
+        rationale: `Handles conditions: ${chunk.join('; ').slice(0, 60)}...`,
         estimatedSize: 'S',
         mappedFromBR: {
-          sections: ['ruleStatement'],
+          sections: isLast && exceptions.length > 0
+            ? ['ruleStatement', 'exceptions']
+            : ['ruleStatement'],
           conditions: chunk,
+          ...(isLast && exceptions.length > 0 ? { exceptions } : {}),
         },
       })
     }
@@ -457,4 +462,48 @@ function estimateSize(br: BusinessRuleData): 'XS' | 'S' | 'M' | 'L' | 'XL' {
  */
 function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+/**
+ * Derive a meaningful title for a condition chunk.
+ *
+ * Priority:
+ *  1. All WHEN…THEN condition expressions across the chunk joined with "or"
+ *     — describes the *situation* handled, e.g. "Balance < $100 or Balance Between $100-$500"
+ *  2. First WHEN/IF clause text in full (no truncation)
+ *  3. First condition text in full (no truncation)
+ *
+ * No ellipsis truncation — titles must be complete and scannable.
+ *
+ * @param ruleName - Base rule name
+ * @param chunk    - Conditions assigned to this story slice
+ * @returns Human-readable title describing what this story covers
+ */
+function deriveChunkTitle(ruleName: string, chunk: string[]): string {
+  const combined = chunk.join('; ')
+
+  // Strategy 1: collect every WHEN … THEN condition expression across the chunk.
+  // The WHEN clause names the *situation* — most meaningful for a card title.
+  const whenConditions: string[] = []
+  const whenThenRe = /\bWHEN\s+(.+?)\s+THEN\b/gi
+  let m: RegExpExecArray | null
+  while ((m = whenThenRe.exec(combined)) !== null) {
+    const expr = m[1].trim()
+    if (expr) whenConditions.push(capitalize(expr))
+  }
+  if (whenConditions.length > 0) {
+    return `${ruleName} — ${whenConditions.join(' or ')}`
+  }
+
+  // Strategy 2: first IF/WHEN clause text in full
+  const whenMatch = combined.match(/\b(?:WHEN|IF)\s+(.+?)(?:\bTHEN\b|;|$)/i)
+  if (whenMatch) {
+    return `${ruleName} — ${capitalize(whenMatch[1].trim())}`
+  }
+
+  // Strategy 3: raw first condition text in full
+  const firstCondition = (chunk[0] || '').trim()
+  return firstCondition
+    ? `${ruleName} — ${capitalize(firstCondition)}`
+    : `${ruleName} - Part ${chunk.length}`
 }

@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Sync tooling — not app code
+    "tools/**",
+    // Playwright e2e — not React code, hook rules don't apply
+    "e2e/**",
   ]),
 ]);
 

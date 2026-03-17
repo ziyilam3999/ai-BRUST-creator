@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useGuidedCreatorStore } from '@/stores/guided-creator-store'
 import { useGuidedChat } from '@/hooks/use-guided-chat'
@@ -23,6 +24,7 @@ const TYPE_LABELS = {
 }
 
 export function GuidedCreatorContainer({ documentType, onClose, onSave }: Props) {
+  const router = useRouter()
   const {
     initSession,
     restoreFromAutoSave,
@@ -37,25 +39,35 @@ export function GuidedCreatorContainer({ documentType, onClose, onSave }: Props)
   const [isSaving, setIsSaving] = useState(false)
   // Track last completion that triggered suggestion to avoid re-firing on each render
   const suggestionFiredAt = useRef<number | null>(null)
+  // Guard against React StrictMode double-invocation firing the draft toast twice
+  const draftToastShown = useRef(false)
 
   useEffect(() => {
-    // B2: Check for unsaved draft on mount — show Sonner toast with recovery option
-    const draft = checkForUnsavedDraft()
-    if (draft) {
-      const savedDate = new Date(draft.savedAt)
-      const timeStr = savedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      toast('Unsaved draft found', {
-        description: `Draft from ${timeStr} — resume where you left off?`,
-        action: {
-          label: 'Resume',
-          onClick: () => {
-            restoreFromAutoSave(draft.state)
-            clearDraft()
+    // B2: Check for unsaved draft on mount — show Sonner toast with recovery option.
+    // draftToastShown ref prevents double-fire caused by React StrictMode's intentional
+    // double-invoke of effects in development (ref survives the cleanup/re-run cycle).
+    if (!draftToastShown.current) {
+      draftToastShown.current = true
+      const draft = checkForUnsavedDraft()
+      if (draft) {
+        const savedDate = new Date(draft.savedAt)
+        const timeStr = savedDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        toast('Unsaved draft found', {
+          description: `Draft from ${timeStr} — resume where you left off?`,
+          action: {
+            label: 'Resume',
+            onClick: () => {
+              restoreFromAutoSave(draft.state)
+              clearDraft()
+            },
           },
-        },
-        cancel: { label: 'Dismiss', onClick: clearDraft },
-        duration: 10_000,
-      })
+          cancel: { label: 'Dismiss', onClick: clearDraft },
+          // onAutoClose fires when the toast expires by its timer.
+          // onDismiss is user-swipe/manual-close only — wrong callback for timer expiry.
+          onAutoClose: () => clearDraft(),
+          duration: 10_000,
+        })
+      }
     }
 
     // B2: Start auto-save loop; stop it on unmount
@@ -131,10 +143,15 @@ export function GuidedCreatorContainer({ documentType, onClose, onSave }: Props)
             onClick={async () => {
               setIsSaving(true)
               try {
-                await saveDraft()
+                const result = await saveDraft()
+                const savedId = result?.data?.id
                 onSave?.()
+                if (savedId) {
+                  const path = documentType === 'user_story' ? 'user-story' : 'business-rule'
+                  router.push(`/${path}/${savedId}`)
+                }
               } catch {
-                // Error handling delegated to parent or toast
+                toast.error('Failed to save draft. Please try again.')
               } finally {
                 setIsSaving(false)
               }

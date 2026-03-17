@@ -14,6 +14,7 @@ import type {
   AcceptanceCriterion,
   DefinitionOfDoneItem,
 } from '@/types/user-story'
+import type { ProposedStory } from '@/lib/guided/br-to-us-analyzer'
 
 // ============================================================================
 // Types
@@ -75,25 +76,35 @@ const PERSONA_PATTERNS = [
  * @param br - BusinessRule data to convert
  * @param storyIndex - Index when generating multiple stories (0-based)
  * @param totalStories - Total number of stories being generated
+ * @param proposedStory - Optional: analyzer proposal describing which sections/conditions/exceptions this story covers
  * @returns UserStory data
  */
 export function mapBRtoUS(
   br: BusinessRuleData,
   storyIndex: number = 0,
-  totalStories: number = 1
+  totalStories: number = 1,
+  proposedStory?: ProposedStory
 ): UserStoryData {
   const storyId = generateStoryId(br.ruleId, storyIndex, totalStories)
-  const title = generateTitle(br.ruleName, storyIndex, totalStories)
+  // Use the analyzer's differentiated title when available; fall back to generic numbering
+  const title = proposedStory ? proposedStory.title : generateTitle(br.ruleName, storyIndex, totalStories)
   const epic = mapCategoryToEpic(br.category)
   const priority = mapPriority(br.priority as BusinessRulePriority)
 
+  // When a conditions slice is provided, build `feature` from those conditions
+  // so each story's "I want to..." sentence describes only its own slice, not the full rule.
+  const scopedConditions = proposedStory?.mappedFromBR?.conditions
+  const feature = scopedConditions && scopedConditions.length > 0
+    ? `handle the following: ${scopedConditions.join('; ')}`
+    : extractActionFromRule(br.ruleStatement)
+
   const storyStatement = {
     role: extractPersonaFromRule(br.ruleStatement),
-    feature: extractActionFromRule(br.ruleStatement),
+    feature,
     benefit: extractBenefitFromRule(br.ruleStatement),
   }
 
-  const acceptanceCriteria = generateAcceptanceCriteria(br)
+  const acceptanceCriteria = generateAcceptanceCriteria(br, proposedStory?.mappedFromBR)
   const definitionOfDone = generateDefinitionOfDone()
 
   return {
@@ -274,25 +285,54 @@ function mapCategoryToEpic(category: string): string {
 }
 
 /**
- * Generate acceptance criteria from BR
+ * Generate acceptance criteria from BR, optionally scoped to a specific story slice.
+ *
+ * @param br - Full business rule data
+ * @param scope - Optional: from ProposedStory.mappedFromBR — which sections/conditions/exceptions this story owns
  */
-function generateAcceptanceCriteria(br: BusinessRuleData): AcceptanceCriterion[] {
+function generateAcceptanceCriteria(
+  br: BusinessRuleData,
+  scope?: ProposedStory['mappedFromBR']
+): AcceptanceCriterion[] {
   const criteria: AcceptanceCriterion[] = []
   let idCounter = 1
 
-  // Main flow from rule statement
-  if (br.ruleStatement.if && br.ruleStatement.then) {
-    criteria.push({
-      id: String(idCounter++),
-      scenario: 'Main flow - Success',
-      given: extractGiven(br.ruleStatement.if),
-      when: 'the action is triggered',
-      then: br.ruleStatement.then,
-    })
+  // Determine which sections this story covers.
+  // When a scope is provided we use it to include/exclude sections.
+  const sections = scope?.sections ?? ['ruleStatement', 'exceptions', 'examples']
+  const includeRuleStatement = sections.includes('ruleStatement')
+  const includeExceptions = sections.includes('exceptions')
+  const includeExamples = sections.includes('examples')
+
+  // Main flow from rule statement.
+  // When a conditions slice is provided, emit one AC row per condition in the chunk
+  // (each condition becomes its own testable scenario). Otherwise fall back to a
+  // single generic "Main flow - Success" row from the full ruleStatement.
+  if (includeRuleStatement) {
+    if (scope?.conditions && scope.conditions.length > 0) {
+      for (const condition of scope.conditions) {
+        const label = condition.length > 80 ? `${condition.slice(0, 80)}...` : condition
+        criteria.push({
+          id: String(idCounter++),
+          scenario: label,
+          given: extractGiven(condition),
+          when: 'the action is triggered',
+          then: br.ruleStatement.then || 'the system handles the condition appropriately',
+        })
+      }
+    } else if (br.ruleStatement.if && br.ruleStatement.then) {
+      criteria.push({
+        id: String(idCounter++),
+        scenario: 'Main flow - Success',
+        given: extractGiven(br.ruleStatement.if),
+        when: 'the action is triggered',
+        then: br.ruleStatement.then,
+      })
+    }
   }
 
   // Else path (if exists)
-  if (br.ruleStatement.else) {
+  if (includeRuleStatement && br.ruleStatement.else) {
     criteria.push({
       id: String(idCounter++),
       scenario: 'Alternative flow - Condition not met',
@@ -302,20 +342,36 @@ function generateAcceptanceCriteria(br: BusinessRuleData): AcceptanceCriterion[]
     })
   }
 
-  // Convert exceptions to AC
-  const exceptions = br.exceptions || []
+  // Convert exceptions to AC — skip degenerate fragments (bare *, **, or whitespace-only)
+  // When a scope lists specific exceptions, include only those; otherwise include all.
+  const allExceptions = (br.exceptions || []).filter(ex => ex.replace(/[\s*]/g, '').length > 4)
+  const exceptions = includeExceptions
+    ? (scope?.exceptions && scope.exceptions.length > 0
+        ? allExceptions.filter(ex =>
+            scope.exceptions!.some(scoped => ex.toLowerCase().includes(scoped.toLowerCase()))
+          )
+        : allExceptions)
+    : []
   for (const exception of exceptions) {
+    // Strip markdown formatting then take only the title portion (before first ' - ' detail line)
+    const stripped = exception
+      .replace(/\*{1,2}([^*]+)\*{1,2}/g, '$1') // remove bold/italic markers
+      .replace(/^\s*\d+\.\s*/, '')              // remove leading number
+      .trim()
+    // Title = first segment before any ' - SubField: ...' detail lines
+    const title = stripped.split(/\s+-\s+\w+:/)[0].trim()
+    const label = title.length > 60 ? `${title.slice(0, 60)}...` : title
     criteria.push({
       id: String(idCounter++),
-      scenario: `Exception - ${exception.slice(0, 30)}...`,
-      given: exception,
+      scenario: `Exception: ${label}`,
+      given: stripped,
       when: 'the exception condition occurs',
       then: 'the system handles the exception appropriately',
     })
   }
 
   // Convert examples to AC
-  const examples = br.examples || []
+  const examples = includeExamples ? (br.examples || []) : []
   for (const example of examples) {
     const isValid = example.isValid
     criteria.push({

@@ -59,8 +59,17 @@ out/
 # Internal AI development files
 CLAUDE.md
 .claude/
-.github/copilot-instructions.md
-.github/rules/
-.github/self-improve/
-.github/learn-project.md
-tools/legacy/
+.github/
+
+# Removed non-production directories
+__tests__/
+e2e/
+docs/
+tools/
+scripts/
+
+# Test configs
+vitest.config.ts
+vitest.config.tools.ts
+playwright.config.ts
+CONTRIBUTING.md

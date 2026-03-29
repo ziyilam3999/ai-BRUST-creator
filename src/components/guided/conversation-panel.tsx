@@ -97,9 +97,9 @@ export function ConversationPanel() {
     const stripActionFooter = (text: string) => {
       return text
         // Strip "--- \n\n Actions: [...]" pattern
-        .replace(/\n*---\s*\n+\s*\*?\*?Actions?:\*?\*?.*$/is, '')
+        .replace(/\n*---\s*\n+\s*\*?\*?Actions?:\*?\*?[\s\S]*$/i, '')
         // Also strip standalone "Actions: [...]" line (no preceding ---)
-        .replace(/\n+\s*\*?\*?Actions?:\*?\*?\s*\[.*$/is, '')
+        .replace(/\n+\s*\*?\*?Actions?:\*?\*?\s*\[[\s\S]*$/i, '')
         .trimEnd()
     }
     const capturedContent: Record<string, unknown> = lastAiMsg
@@ -217,8 +217,8 @@ export function ConversationPanel() {
           if (!lastAi) return false
           // Strip trailing action footer & follow-up question before evaluating
           const stripped = lastAi.content
-            .replace(/\n*---\s*\n+\s*\*?\*?Actions?:\*?\*?.*$/is, '')
-            .replace(/\n+\s*\*?\*?Actions?:\*?\*?\s*\[.*$/is, '')
+            .replace(/\n*---\s*\n+\s*\*?\*?Actions?:\*?\*?[\s\S]*$/i, '')
+            .replace(/\n+\s*\*?\*?Actions?:\*?\*?\s*\[[\s\S]*$/i, '')
             .trimEnd()
           // After stripping, if message is just a question/prompt — no draft
           if (stripped.endsWith('?') || stripped.endsWith(':')) return false

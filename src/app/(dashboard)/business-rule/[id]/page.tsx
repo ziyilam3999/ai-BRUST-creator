@@ -193,7 +193,7 @@ function normalizeContent(raw: unknown): BusinessRuleData {
       : []
 
   const rawEx = Object.values(examplesSection).find(v => Array.isArray(v)) as unknown[] | undefined
-  let examples: { scenario: string; isValid: boolean; description: string }[] = rawEx
+  const examples: { scenario: string; isValid: boolean; description: string }[] = rawEx
     ? rawEx.map(e => {
         if (typeof e === 'string') return { scenario: e, isValid: true, description: e }
         const obj = e as Record<string, unknown>
@@ -649,10 +649,10 @@ export default function BusinessRuleDetailPage() {
                                         return (
                                           <div key={ck} className="text-xs space-y-0.5">
                                             <span className="font-medium capitalize">{ck.replace(/_/g, ' ')}:</span>
-                                            {cond.if && <div><span className="text-blue-600 font-semibold">IF</span> {String(cond.if)}</div>}
-                                            {cond.then && <div><span className="text-green-600 font-semibold">THEN</span>{' '}{Array.isArray(cond.then) ? (cond.then as string[]).join('; ') : String(cond.then)}</div>}
-                                            {cond.else && <div><span className="text-orange-600 font-semibold">ELSE</span> {String(cond.else)}</div>}
-                                            {cond.priority && <div className="text-muted-foreground">Priority: {String(cond.priority)}</div>}
+                                            {cond.if ? <div><span className="text-blue-600 font-semibold">IF</span> {String(cond.if)}</div> : null}
+                                            {cond.then ? <div><span className="text-green-600 font-semibold">THEN</span>{' '}{Array.isArray(cond.then) ? (cond.then as string[]).join('; ') : String(cond.then)}</div> : null}
+                                            {cond.else ? <div><span className="text-orange-600 font-semibold">ELSE</span> {String(cond.else)}</div> : null}
+                                            {cond.priority ? <div className="text-muted-foreground">Priority: {String(cond.priority)}</div> : null}
                                           </div>
                                         )
                                       })}
@@ -664,9 +664,9 @@ export default function BusinessRuleDetailPage() {
                               if (nested.if || nested.then) {
                                 return (
                                   <div key={key}>
-                                    {nested.if && <div><span className="text-blue-600 font-semibold">IF</span> {String(nested.if)}</div>}
-                                    {nested.then && <div><span className="text-green-600 font-semibold">THEN</span> {String(nested.then)}</div>}
-                                    {nested.else && <div><span className="text-orange-600 font-semibold">ELSE</span> {String(nested.else)}</div>}
+                                    {nested.if ? <div><span className="text-blue-600 font-semibold">IF</span> {String(nested.if)}</div> : null}
+                                    {nested.then ? <div><span className="text-green-600 font-semibold">THEN</span> {String(nested.then)}</div> : null}
+                                    {nested.else ? <div><span className="text-orange-600 font-semibold">ELSE</span> {String(nested.else)}</div> : null}
                                   </div>
                                 )
                               }

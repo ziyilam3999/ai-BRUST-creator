@@ -318,14 +318,14 @@ function SectionDisplay({ section, content }: { section: string; content: Record
                       return (
                         <div key={ck} className="text-xs space-y-0.5">
                           <span className="font-medium capitalize">{ck.replace(/_/g, ' ')}:</span>
-                          {cond.if && <div><span className="text-blue-600 font-semibold">IF</span> {String(cond.if)}</div>}
-                          {cond.then && (
+                          {cond.if ? <div><span className="text-blue-600 font-semibold">IF</span> {String(cond.if)}</div> : null}
+                          {cond.then ? (
                             <div><span className="text-green-600 font-semibold">THEN</span>{' '}
                               {Array.isArray(cond.then) ? (cond.then as string[]).join('; ') : String(cond.then)}
                             </div>
-                          )}
-                          {cond.else && <div><span className="text-orange-600 font-semibold">ELSE</span> {String(cond.else)}</div>}
-                          {cond.priority && <div className="text-muted-foreground">Priority: {String(cond.priority)}</div>}
+                          ) : null}
+                          {cond.else ? <div><span className="text-orange-600 font-semibold">ELSE</span> {String(cond.else)}</div> : null}
+                          {cond.priority ? <div className="text-muted-foreground">Priority: {String(cond.priority)}</div> : null}
                         </div>
                       )
                     })}

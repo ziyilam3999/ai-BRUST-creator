@@ -193,7 +193,7 @@ function normalizeContent(raw: unknown): BusinessRuleData {
       : []
 
   const rawEx = Object.values(examplesSection).find(v => Array.isArray(v)) as unknown[] | undefined
-  let examples: { scenario: string; isValid: boolean; description: string }[] = rawEx
+  const examples: { scenario: string; isValid: boolean; description: string }[] = rawEx
     ? rawEx.map(e => {
         if (typeof e === 'string') return { scenario: e, isValid: true, description: e }
         const obj = e as Record<string, unknown>

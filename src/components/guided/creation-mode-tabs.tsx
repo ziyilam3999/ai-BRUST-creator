@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import {
   AlertDialog,
@@ -27,17 +27,13 @@ interface Props {
 const STORAGE_KEY = 'brust-creation-mode'
 
 export function CreationModeTabs({ documentType, getHasUnsavedWork }: Props) {
-  const [activeTab, setActiveTab] = useState<CreationMode>('guided')
+  const [activeTab, setActiveTab] = useState<CreationMode>(() => {
+    if (typeof window === 'undefined') return 'guided'
+    const stored = localStorage.getItem(STORAGE_KEY)
+    return stored === 'expert' || stored === 'guided' ? stored : 'guided'
+  })
   const [pendingTab, setPendingTab] = useState<CreationMode | null>(null)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
-
-  // Read stored preference on mount (after hydration to avoid SSR mismatch)
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored === 'expert' || stored === 'guided') {
-      setActiveTab(stored)
-    }
-  }, [])
 
   const applyTabChange = (tab: CreationMode) => {
     setActiveTab(tab)

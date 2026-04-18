@@ -2,12 +2,24 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/ziyilam3999/ai-BRUST-creator/actions/workflows/ci.yml/badge.svg)](https://github.com/ziyilam3999/ai-BRUST-creator/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/ziyilam3999/ai-BRUST-creator)](https://github.com/ziyilam3999/ai-BRUST-creator/releases)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![React](https://img.shields.io/badge/React-19-61DAFB)
 
 > **BRUST** = **B**usiness **R**ules & **U**ser **S**tory **T**ool
 
 AI-assisted business rule and user story generator. Transform product requirements into structured, consistent business rules and user stories using Claude AI.
+
+```mermaid
+graph LR
+    U[User inputs<br/>product requirements] --> G[GitHub OAuth]
+    G --> C[Claude API<br/>generation]
+    C --> Z[Zod schema<br/>runtime validation]
+    Z --> BR[Business Rules]
+    Z --> US[User Stories]
+    BR --> DB[(Turso /<br/>LibSQL)]
+    US --> DB
+```
 
 ## Features
 

@@ -25,7 +25,7 @@
 - [ ] **C4.** Delete 3 merged remote branches: `origin/chore/readme-polish-mermaid`, `origin/feat/add-ci-and-code-review`, `origin/fix/ci-lint-errors`  *(confirm before push)*
 - [ ] **C5.** Decide fate of Windows-only `backup/pre-cleanup` branch  *(if preserving, push to origin as `archive/pre-cleanup` BEFORE leaving Windows; otherwise moot on MacBook)*
 - [ ] **C6.** Delete merged Windows-only `fix/ci-lint-errors` branch  *(moot on MacBook fresh clone)*
-- [x] **C7.** Create `.ai-workspace/plans/` scaffold (done in handoff PR via `.gitkeep`)
+- [x] **C7.** Create `.ai-workspace/plans/` scaffold (done in handoff PR #4 via `.gitkeep`)
 - [ ] **C8.** Generate `PROJECT-INDEX.md` via `/project-index` skill  *(run on MacBook after merge)*
 
 ---
